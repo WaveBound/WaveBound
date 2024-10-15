@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Download Macro</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .download-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #282c34;
+        }
+        .download-select {
+            font-size: 1.2rem;
+            padding: 12px 20px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        #download-btn {
+            width: 100%;
+            font-size: 1.2rem;
+            padding: 12px 20px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,18 +40,47 @@
     <main>
         <section class="download-container">
             <h2>Select Macro Version</h2>
-            <select id="macro-version">
-                <option value="">Choose a version</option>
-                <option value="v1.0">Version 1.0</option>
-                <option value="v1.1">Version 1.1</option>
-                <option value="v1.2">Version 1.2</option>
+            <select id="macro-version" class="download-select">
+                <option value="" disabled selected>Choose a version</option>
+                <option value="WaveBound v1.67">Version 1.0</option>
+                <option value="WaveBound Paragon">Version 1.1</option>
             </select>
-            <button id="download-btn">Download</button>
+            <select id="file-type" class="download-select">
+                <option value="" disabled selected>Choose file type</option>
+                <option value="py">.py (Python script)</option>
+                <option value="pyw">.pyw (Python Windows script)</option>
+            </select>
+            <button id="download-btn" class="wiki-button">Download</button>
         </section>
     </main>
 
     <footer>
-        <p>© 2024 Wiki Project. All rights reserved.</p>
+        <p>&copy; 2024 Wiki Project. All rights reserved.</p>
     </footer>
+
+    <script>
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const selectedVersion = document.getElementById('macro-version').value;
+            const selectedFileType = document.getElementById('file-type').value;
+            if (selectedVersion && selectedFileType) {
+                const fileUrl = `macros/${selectedVersion}.${selectedFileType}`;
+                fetch(fileUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `macro-${selectedVersion}.${selectedFileType}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(() => alert('Error downloading the file. Please try again.'));
+            } else {
+                alert('Please select both a version and a file type before downloading.');
+            }
+        });
+    </script>    
 </body>
 </html>
