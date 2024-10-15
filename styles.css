@@ -66,7 +66,7 @@ main {
     height: 200%;
     background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
     transform: rotate(30deg);
-    transition: 0.5s;
+    transition: 1s; /* Increased from 0.5s to 1s for a slower animation */
     opacity: 0;
 }
 
