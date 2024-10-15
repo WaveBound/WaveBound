@@ -92,6 +92,30 @@ main {
     margin-bottom: 0.5rem;
 }
 
+.back-button {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    font-size: 1rem;
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    background-color: #696969;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.back-button:hover {
+    background-color: #005999;
+}
+
+.back-button-icon {
+    margin-right: 5px;
+}
+
+
 footer {
     text-align: center;
     padding: 1rem 0;
