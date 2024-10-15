@@ -45,6 +45,14 @@ main {
 }
 
 .wiki-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #696969;
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -65,6 +73,10 @@ main {
 .wiki-button:hover::after {
     opacity: 1;
     left: 100%;
+}
+
+.wiki-button:hover {
+    background-color: #005999;
 }
 
 footer {
