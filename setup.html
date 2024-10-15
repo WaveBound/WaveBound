@@ -17,21 +17,15 @@
             <div class="content-container">
                 <select id="stepSelector" onchange="showStep()">
                     <option value="">Select a step</option>
-                    <option value="1">Step 1</option>
-                    <option value="2">Step 2</option>
-                    <option value="3">Step 3</option>
-                    <option value="4">Step 4</option>
-                    <option value="5">Step 5</option>
-                    <option value="6">Step 6</option>
-                    <option value="7">Step 7</option>
-                    <option value="8">Step 8</option>
-                    <option value="9">Step 9</option>
-                    <option value="10">Step 10</option>
-                    <option value="11">Step 11</option>
-                    <option value="12">Step 12</option>
-                    <option value="13">Step 13</option>
-                    <option value="14">Step 14</option>
-                    <option value="15">Step 15</option>
+                    <option value="1">Start</option>
+                    <option value="2">Main Tab</option>
+                    <option value="3">Unit Tab</option>
+                    <option value="4">Wave Tab</option>
+                    <option value="5">Upgrade Tab</option>
+                    <option value="6">Ability Tab</option>
+                    <option value="7">Replay Tab</option>
+                    <option value="8">Paragon Tab</option>
+                    <option value="9">Anti-Afk Tab</option>
                 </select>
 
                 <div id="stepContent">
@@ -47,21 +41,15 @@
 
     <script>
         const stepContent = {
-            1: "Step 1 instructions go here.",
-            2: "Step 2 instructions go here.",
-            3: "Step 3 instructions go here.",
-            4: "Step 4 instructions go here.",
-            5: "Step 5 instructions go here.",
-            6: "Step 6 instructions go here.",
-            7: "Step 7 instructions go here.",
+            1: "Make A Folder And Move The .Py/.Pyw File Into it<br><br>Then Open The File",
+            2: "In The New File Name: Box Type The Name For The Config File And Click Create<br><br>Then Select The New File<br><br>Under Macro Keys, Click The Option That Says Click To Set<br><br>Then Press The Key You Want To Bind The Macro To",
+            3: "Move To The Units Tab, After Moving To The Units Tab<br><br>Set The Slot Number (Number Of The Unit That Will Be Placed)<br><br>And Enable/Disable The Units Needed<br><br>Click The Set Click Location And Click Where You Want The Unit Placed<br><br>Set The Wave Number (Wave The Unit Is Placed On)<br><br>Set The Delay (Time After Hitting The Number To Start Placing The Unit)",
+            4: "Move To The Wave Tab, After Moving To The Wave Tab<br><br>Set The Wave Region (This Is Where It Checks The Wave Number)",
+            5: "Move To The Upgrade Tab, After Moving To The Upgrade Tab<br><br>Set The Number Of Upgrades (This Is The Number Of Upgrades You Can Customize)<br><br>Set The Upgrade Region (Set This Where It Shows The Upgrade Number/Text)<br><br>Set Upgrade Click Location (Set This Where The Upgrade Button Is)<br><br>Under Upgrade Settings Set The Upgrade Unit (This Is The Unit Number From The Unit Tab)<br><br>Set The Wave To Start Upgrading<br><br>Set The Upgrade Text (This Is The Number/Word It Looks For To Confirm The Upgrade Is Completed)",
+            6: "Move To The Ability Tab, After Moving To The Ability Tab<br><br>Set The Number Of Abilities (This Is The Number Of Abilities You Can Customize)<br><br>Set The Ability Click Location (This Is Where The Ability Button Is)<br><br>Under Ability Settings Set The Ability Unit (This Is The Unit Number From The Unit Tab)<br><br>Set The Wave To Start Using The Ability<br><br>Set The Delay (This Is The Delay After Seeing The Wave To Play The Ability)",
+            7: "",
             8: "Step 8 instructions go here.",
             9: "Step 9 instructions go here.",
-            10: "Step 10 instructions go here.",
-            11: "Step 11 instructions go here.",
-            12: "Step 12 instructions go here.",
-            13: "Step 13 instructions go here.",
-            14: "Step 14 instructions go here.",
-            15: "Step 15 instructions go here."
         };
 
         function showStep() {
