@@ -10,14 +10,14 @@
             max-width: 600px;
             margin: 0 auto;
             padding: 2rem;
-            background-color: white;
+            background-color: #1E1E1E;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: white;
         }
         h2 {
             font-size: 2rem;
             margin-bottom: 1.5rem;
-            color: #282c34;
         }
         .download-select {
             font-size: 1.2rem;
@@ -33,30 +33,32 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Download Macro</h1>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Download Macro</h1>
+        </header>
 
-    <main>
-        <section class="download-container">
-            <h2>Select Macro Version</h2>
-            <select id="macro-version" class="download-select">
-                <option value="" disabled selected>Choose a version</option>
-                <option value="WaveBound v1.67">Version 1.67</option>
-                <option value="WaveBound Paragon">Paragon</option>
-            </select>
-            <select id="file-type" class="download-select">
-                <option value="" disabled selected>Choose file type</option>
-                <option value="py">.py (Python script)</option>
-                <option value="pyw">.pyw (Python Windows script)</option>
-            </select>
-            <button id="download-btn" class="wiki-button">Download</button>
-        </section>
-    </main>
+        <main>
+            <section class="download-container">
+                <h2>Select Macro Version</h2>
+                <select id="macro-version" class="download-select">
+                    <option value="" disabled selected>Choose a version</option>
+                    <option value="WaveBound v1.67">Version 1.67</option>
+                    <option value="WaveBound Paragon">Paragon</option>
+                </select>
+                <select id="file-type" class="download-select">
+                    <option value="" disabled selected>Choose file type</option>
+                    <option value="py">.py (Python script)</option>
+                    <option value="pyw">.pyw (Python Windows script)</option>
+                </select>
+                <button id="download-btn" class="wiki-button">Download</button>
+            </section>
+        </main>
 
-    <footer>
-        <p>&copy; 2024 Wiki Project. All rights reserved.</p>
-    </footer>
+        <footer>
+            <p>&copy; 2024 Wiki Project. All rights reserved.</p>
+        </footer>
+    </div>
 
     <script>
         document.getElementById('download-btn').addEventListener('click', function() {
