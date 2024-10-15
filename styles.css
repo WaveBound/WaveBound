@@ -126,11 +126,6 @@ main {
     min-height: 200px;
 }
 
-link[rel="icon"] {
-    border-radius: 50%;
-    overflow: hidden;
-  }  
-
 footer {
     text-align: center;
     padding: 1rem 0;
