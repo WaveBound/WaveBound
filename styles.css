@@ -45,18 +45,26 @@ main {
 }
 
 .wiki-button {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background-color: #3498db;
-    color: white;
-    text-decoration: none;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.wiki-button:hover {
-    background-color: #2980b9;
+.wiki-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: rotate(30deg);
+    transition: 0.5s;
+    opacity: 0;
+}
+
+.wiki-button:hover::after {
+    opacity: 1;
+    left: 100%;
 }
 
 footer {
