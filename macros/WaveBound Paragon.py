@@ -819,7 +819,7 @@ class TDMacro:
         ctk.CTkLabel(priority_frame, text="Paragon Priority", font=BOLD_FONT, text_color=LABEL_COLOR).pack(pady=5)
 
         self.paragon_priorities = [
-            "STRONG ENEMIES", "REGEN ENEMIES", "THRICE", "FAST ENEMIES", "SHIELDED", "EXPLOSION", "REVITALIZE"
+            "SHIELDED", "REGEN ENEMIES","IMMUNITY", "CHAMPIONS", "THRICE", "DODGE", "STRONG ENEMIES", "FAST ENEMIES", "EXPLOSION", "REVITALIZE", "DROWSY", "QUAKE"
     ]
     
         self.priority_frames = []
