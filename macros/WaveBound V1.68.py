@@ -1538,6 +1538,10 @@ function loadConfig() {
 
 class TransparentOverlay:
     def __init__(self, window, callback, region_select=False):
+        # Minimize window using the actual window minimize
+        window.minimize()
+        time.sleep(0.2)  # Wait for minimize
+        
         self.root = tk.Tk()
         self.window = window
         self.callback = callback
@@ -1585,6 +1589,11 @@ class TransparentOverlay:
         # Start the tkinter main loop
         self.root.mainloop()
 
+    def restore_window(self):
+        # Restore window to normal state
+        self.window.restore()
+        time.sleep(0.2)  # Wait for restore
+
     def start_selection(self, event):
         self.start_x = event.x_root - self.min_x
         self.start_y = event.y_root - self.min_y
@@ -1607,14 +1616,17 @@ class TransparentOverlay:
         y1 = min(self.start_y, end_y)
         x2 = max(self.start_x, end_x)
         y2 = max(self.start_y, end_y)
-        self.callback((x1, y1, x2, y2))
         self.root.destroy()
+        self.callback((x1, y1, x2, y2))
+        self.restore_window()
 
     def on_click(self, event):
         x = event.x_root - self.min_x
         y = event.y_root - self.min_y
-        self.callback((x, y))
         self.root.destroy()
+        self.callback((x, y))
+        self.restore_window()
+
 
 
 class LogRedirect(io.StringIO):
