@@ -19,14 +19,26 @@
             font-size: 2rem;
             margin-bottom: 1.5rem;
         }
-        .download-select {
-            font-size: 1.2rem;
-            padding: 12px 20px;
-            background-color: #0d1117;
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #c9d1d9;
-        }
+.download-select {
+    font-size: 1.2rem;
+    padding: 12px 20px;
+    background-color: #0d1117;
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #c9d1d9;
+}
+
+/* Style for the unselectable option */
+.download-select option:disabled {
+    background-color: #161b22; /* Same as the background color */
+    color: transparent; /* Hide the text color */
+}
+
+/* Optional: Style for the selected option */
+.download-select option {
+    background-color: #0d1117; /* Background for regular options */
+    color: #c9d1d9; /* Text color for regular options */
+}
         #download-btn {
             width: 100%;
             font-size: 1.2rem;
