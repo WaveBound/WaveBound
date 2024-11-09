@@ -1,10 +1,10 @@
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: Arial, sans-serif;
     line-height: 1.6;
-    color: #333;
+    color: #c9d1d9;
     margin: 0;
     padding: 0;
-    background-color: #2b2b2b;
+    background-color: #0d1117;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -23,8 +23,8 @@ body {
 }
 
 header {
-    background-color: #242424;
-    color: #ecf0f1;
+    background-color: #161b22;
+    color: #c9d1d9;
     text-align: center;
     padding: 2rem 0;
     width: 100%;
@@ -43,12 +43,11 @@ main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
-    background-color: #1E1E1E;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    color: white;
+    background-color: #161b22;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #c9d1d9;
 }
-
 
 .hero {
     text-align: center;
@@ -72,19 +71,20 @@ main {
     flex-direction: column;
     align-items: center;
     padding: 1.5rem 2rem;
-    background-color: #696969;
-    color: white;
+    background-color: #1b1f23;
+    color: #c9d1d9;
     text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.3s, transform 0.3s;
+    border-radius: 3px;
+    border: 1px solid #30363d;
+    transition: background-color 0.3s;
     font-size: 1.2rem;
     font-weight: bold;
     text-align: center;
 }
 
 .Main-button:hover {
-    background-color: #005999;
-    transform: scale(1.05);
+    background-color: #58a6ff;
+    color: #0d1117;
 }
 
 .button-icon {
@@ -97,18 +97,20 @@ main {
     left: 20px;
     top: 20px;
     font-size: 1rem;
-    color: #ecf0f1;
+    color: #c9d1d9;
     text-decoration: none;
     padding: 8px 12px;
-    border-radius: 5px;
-    background-color: #696969;
+    border-radius: 3px;
+    background-color: #1b1f23;
+    border: 1px solid #30363d;
     transition: background-color 0.3s;
     display: flex;
     align-items: center;
 }
 
 .back-button:hover {
-    background-color: #005999;
+    background-color: #58a6ff;
+    color: #0d1117;
 }
 
 .back-button-icon {
@@ -120,6 +122,10 @@ main {
     padding: 10px;
     margin-bottom: 20px;
     font-size: 16px;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 3px;
 }
 
 #stepContent {
@@ -129,7 +135,7 @@ main {
 footer {
     text-align: center;
     padding: 1rem 0;
-    background-color: #242424;
-    color: #ecf0f1;
+    background-color: #161b22;
+    color: #c9d1d9;
     width: 100%;
 }
