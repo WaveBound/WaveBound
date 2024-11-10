@@ -794,17 +794,19 @@ function createInfoDialog(message, buttons) {
         min-width: 300px;
         max-width: 600px;
         max-height: 400px;
-        overflow-y: auto; /* Enable scrolling */
+        overflow-y: auto;
     `;
 
-    const messageElement = document.createElement('pre'); // Use <pre> for preserving whitespace
-    messageElement.textContent = message; // Set text content
+    const messageElement = document.createElement('pre');
+    messageElement.textContent = message;
     messageElement.style.cssText = `
         color: #c9d1d9;
         margin: 0 0 20px 0;
-        text-align: left; /* Align text to the left */
-        font-weight: bold; /* Make text bold */
-        font-family: Arial, sans-serif; /* Match the font style */
+        text-align: left;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+        white-space: pre-wrap;
+        word-wrap: break-word;
     `;
 
     const buttonContainer = document.createElement('div');
