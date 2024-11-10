@@ -2205,7 +2205,11 @@ class Api:
             wave_patterns = [f"wave {wave_num}", str(wave_num)]
             for pattern in wave_patterns:
                 for text in all_text:
-                    if pattern in text:
+                    # Add word boundary check to ensure exact number match
+                    if pattern in text and (
+                        f"wave {wave_num}" == text.strip() or 
+                        str(wave_num) == text.strip()
+                    ):
                         print(f"Found wave {wave_num} in text: {text}")
                         current_wave = wave_num
                         break
@@ -2581,7 +2585,7 @@ class Api:
             pydirectinput.moveTo(x, y)
             time.sleep(0.025)
             pydirectinput.click(x, y - 1)
-            time.sleep(5)
+            time.sleep(2)
         
             # Reset all tracking variables
             self.completed_upgrades = {}
