@@ -47,12 +47,12 @@
                 <select id="macro-version" class="download-select">
                     <option value="" disabled selected>Choose a version</option>
                     <option value="WaveBound V1.73">Version 1.73</option>
-                    <option value="WaveBound Paragon">Paragon</option>
                 </select>
                 <select id="file-type" class="download-select">
                     <option value="" disabled selected>Choose file type</option>
                     <option value="py">.py (Python script)</option>
                     <option value="Pyw">.pyw (Python Windows script)</option>
+                    <option value="exe">.exe (Executable)</option>
                 </select>
                 <button id="download-btn" class="Main-button">Download</button>
             </section>
@@ -66,8 +66,10 @@
         document.getElementById('download-btn').addEventListener('click', function() {
             const selectedVersion = document.getElementById('macro-version').value;
             const selectedFileType = document.getElementById('file-type').value;
-            if (selectedVersion && selectedFileType) {
-                const fileUrl = macros/${selectedVersion}.${selectedFileType};
+            if (selectedFileType === 'exe') {
+                window.open('https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound.V1.73.exe', '_blank');
+            } else if (selectedVersion && selectedFileType) {
+                const fileUrl = `macros/${selectedVersion}.${selectedFileType}`;
                 fetch(fileUrl)
                     .then(response => response.blob())
                     .then(blob => {
@@ -75,7 +77,7 @@
                         const a = document.createElement('a');
                         a.style.display = 'none';
                         a.href = url;
-                        a.download = ${selectedVersion}.${selectedFileType};
+                        a.download = `${selectedVersion}.${selectedFileType}`;
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);
