@@ -40,34 +40,57 @@
             <a href="javascript:history.back()" class="back-button"><span class="back-button-icon">&lt;</span> Back</a>
             <h1>Download Macro</h1>
         </header>
+
         <main>
             <section class="download-container">
                 <h2>Select Macro Version</h2>
                 <select id="macro-version" class="download-select">
                     <option value="" disabled selected>Choose a version</option>
-                    <option value="V1.73">WaveBound V1.73</option>
-                    <option value="Paragon">WaveBound Paragon</option>
+                    <option value="WaveBound V1.73">Version 1.73</option>
+                    <option value="WaveBound Paragon">Paragon</option>
+                </select>
+                <select id="file-type" class="download-select">
+                    <option value="" disabled selected>Choose file type</option>
+                    <option value="exe">.exe (Windows Executable)</option>
                 </select>
                 <button id="download-btn" class="Main-button">Download</button>
             </section>
         </main>
+
         <footer>
         </footer>
     </div>
-    <script>
-        const GITHUB_RELEASES = {
-            'V1.73': 'https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound%20V1.73.exe',
-            'Paragon': 'https://github.com/WaveBound/WaveBound/releases/download/Paragon/WaveBound%20Paragon.exe'
-        };
 
+    <script>
         document.getElementById('download-btn').addEventListener('click', function() {
             const selectedVersion = document.getElementById('macro-version').value;
-            
-            if (selectedVersion) {
-                const downloadUrl = GITHUB_RELEASES[selectedVersion];
-                window.location.href = downloadUrl;
+            const selectedFileType = document.getElementById('file-type').value;
+            if (selectedVersion && selectedFileType) {
+                let fileUrl;
+                if (selectedVersion === "WaveBound V1.73" && selectedFileType === "exe") {
+                    fileUrl = "https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound_V1.73.exe"; // Update with the correct EXE file URL
+                } else {
+                    alert('Selected version and file type combination is not available.');
+                    return;
+                }
+                fetch(fileUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `${selectedVersion}.${selectedFileType}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(() => alert('Error downloading the file. Please try again.'));
             } else {
-                alert('Please select a version before downloading.');
+                alert('Please select both a version and a file type before downloading.');
             }
         });
     </script>    
