@@ -45,8 +45,8 @@
                 <h2>Select Macro Version</h2>
                 <select id="macro-version" class="download-select">
                     <option value="" disabled selected>Choose a version</option>
-                    <option value="WaveBound.V1.73">WaveBound V1.73</option>
-                    <option value="WaveBound.Paragon">WaveBound Paragon</option>
+                    <option value="V1.73">WaveBound V1.73</option>
+                    <option value="Paragon">WaveBound Paragon</option>
                 </select>
                 <button id="download-btn" class="Main-button">Download</button>
             </section>
@@ -55,18 +55,17 @@
         </footer>
     </div>
     <script>
+        const GITHUB_RELEASES = {
+            'V1.73': 'https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound.exe',
+            'Paragon': 'https://github.com/WaveBound/WaveBound/releases/download/Paragon/WaveBound.exe'
+        };
+
         document.getElementById('download-btn').addEventListener('click', function() {
             const selectedVersion = document.getElementById('macro-version').value;
             
             if (selectedVersion) {
-                const fileUrl = `releases/${encodeURIComponent(selectedVersion)}.exe`;
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = fileUrl;
-                a.download = `${selectedVersion}.exe`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                const downloadUrl = GITHUB_RELEASES[selectedVersion];
+                window.location.href = downloadUrl;
             } else {
                 alert('Please select a version before downloading.');
             }
