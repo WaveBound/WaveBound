@@ -51,7 +51,8 @@
                 </select>
                 <select id="file-type" class="download-select">
                     <option value="" disabled selected>Choose file type</option>
-                    <option value="exe">.exe (Windows Executable)</option>
+                    <option value="py">.py (Python script)</option>
+                    <option value="Pyw">.pyw (Python Windows script)</option>
                 </select>
                 <button id="download-btn" class="Main-button">Download</button>
             </section>
@@ -66,15 +67,20 @@
             const selectedVersion = document.getElementById('macro-version').value;
             const selectedFileType = document.getElementById('file-type').value;
             if (selectedVersion && selectedFileType) {
-                let fileUrl;
-                if (selectedVersion === "WaveBound V1.73" && selectedFileType === "exe") {
-                    fileUrl = "https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound.V1.73.exe"; // Ensure this URL is correct
-                } else {
-                    alert('Selected version and file type combination is not available.');
-                    return;
-                }
-                // Redirect to the file URL for download
-                window.location.href = fileUrl;
+                const fileUrl = macros/${selectedVersion}.${selectedFileType};
+                fetch(fileUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = ${selectedVersion}.${selectedFileType};
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(() => alert('Error downloading the file. Please try again.'));
             } else {
                 alert('Please select both a version and a file type before downloading.');
             }
