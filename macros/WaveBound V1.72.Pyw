@@ -2574,6 +2574,8 @@ class Api:
             if "not set" not in unit_click_location.lower():
                 coords = re.findall(r'X=(\d+), Y=(\d+)', unit_click_location)[0]
                 unit_x, unit_y = map(int, coords)
+                pydirectinput.moveTo(unit_x, unit_y - 18)
+                time.sleep(0.025)
                 pydirectinput.moveTo(unit_x, unit_y - 19)
                 time.sleep(0.025)
                 pydirectinput.click(unit_x, unit_y - 20)
@@ -2585,7 +2587,9 @@ class Api:
                     ability_x, ability_y = map(int, coords)
                     pydirectinput.moveTo(ability_x, ability_y)
                     time.sleep(0.025)
-                    pydirectinput.click(ability_x, ability_y - 1)
+                    pydirectinput.moveTo(ability_x, ability_y - 1)
+                    time.sleep(0.025)
+                    pydirectinput.click(ability_x, ability_y - 2)
                     time.sleep(0.250)
     
                     anti_afk_status = window.evaluate_js("document.getElementById('anti-afk-click-status').textContent")
@@ -2594,7 +2598,9 @@ class Api:
                         x, y = map(int, coords)
                         pydirectinput.moveTo(x, y)
                         time.sleep(0.025)
-                        pydirectinput.click(x, y - 1)
+                        pydirectinput.moveTo(x, y - 1)
+                        time.sleep(0.025)
+                        pydirectinput.click(x, y - 2)
                         time.sleep(0.50)
     
                     self.completed_abilities.setdefault(ability_unit, set()).add(ability_number)
@@ -2607,7 +2613,9 @@ class Api:
             x, y = map(int, coords)
             pydirectinput.moveTo(x, y)
             time.sleep(0.025)
-            pydirectinput.click(x, y - 1)
+            pydirectinput.moveTo(x, y - 1)
+            time.sleep(0.025)
+            pydirectinput.click(x, y - 2)
             time.sleep(2)
         
             # Reset all tracking variables
@@ -2635,7 +2643,9 @@ class Api:
             x, y = map(int, coords)
             pydirectinput.moveTo(x, y)
             time.sleep(0.025)
-            pydirectinput.click(x, y - 1)
+            pydirectinput.moveTo(x, y - 1)
+            time.sleep(0.025)
+            pydirectinput.click(x, y - 2)
             print("Anti-AFK macro executed")
             return True
         return False
@@ -2669,7 +2679,9 @@ class Api:
         click_x, click_y = map(int, coords)
         pydirectinput.moveTo(click_x, click_y)
         time.sleep(0.025)
-        pydirectinput.click(click_x, click_y - 1)
+        pydirectinput.moveTo(click_x, click_y - 1)
+        time.sleep(0.025)
+        pydirectinput.click(click_x, click_y - 2)
         print(f"Placed Unit {unit_number} using slot {slot_number}")
         
         self.completed_placements.add(unit_number)
