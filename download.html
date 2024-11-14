@@ -68,27 +68,13 @@
             if (selectedVersion && selectedFileType) {
                 let fileUrl;
                 if (selectedVersion === "WaveBound V1.73" && selectedFileType === "exe") {
-                    fileUrl = "https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound.V1.73.exe"; // Update with the correct EXE file URL
+                    fileUrl = "https://github.com/WaveBound/WaveBound/releases/download/V1.73/WaveBound_V1.73.exe"; // Ensure this URL is correct
                 } else {
                     alert('Selected version and file type combination is not available.');
                     return;
                 }
-                fetch(fileUrl)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = `${selectedVersion}.${selectedFileType}`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    })
-                    .catch(() => alert('Error downloading the file. Please try again.'));
+                // Redirect to the file URL for download
+                window.location.href = fileUrl;
             } else {
                 alert('Please select both a version and a file type before downloading.');
             }
