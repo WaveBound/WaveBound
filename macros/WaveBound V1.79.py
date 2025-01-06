@@ -2686,8 +2686,12 @@ class MacroActions:
     
     @staticmethod
     def scroll(amount, direction):
-        scroll_amount = int(amount) * (1 if direction == 'up' else -1)
-        pydirectinput.scroll(scroll_amount)
+        scroll_amount = int(amount)
+        wheel_delta = 120 if direction == 'up' else -120
+    
+        for _ in range(scroll_amount):
+            win32api.mouse_event(0x0800, 0, 0, wheel_delta, 0)
+            time.sleep(0.05)
     
     @staticmethod
     def key_press(key, action):
