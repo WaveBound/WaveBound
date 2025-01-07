@@ -1201,6 +1201,92 @@ function toggleSettingsDropdown(event) {
     });
 }
 
+class DialogDropdownManager {
+    constructor() {
+        this.activeDropdown = null;
+    }
+
+    toggle(event, options = {}) {
+        const {
+            items = [],
+            onSelect = null,
+            customWidth = 100,
+            customHeight = 200
+        } = options;
+
+        const button = event.target.closest('button');
+        const dropdownContainer = button.closest('.dropdown');
+        const existingMenu = dropdownContainer.querySelector('.dropdown-menu');
+        
+        if (this.activeDropdown && this.activeDropdown !== existingMenu) {
+            this.activeDropdown.style.display = 'none';
+        }
+
+        const isVisible = existingMenu.style.display === 'block';
+        existingMenu.style.display = isVisible ? 'none' : 'block';
+
+        if (!isVisible) {
+            const buttonRect = button.getBoundingClientRect();
+            const dialogRect = button.closest('.dialog').getBoundingClientRect();
+            
+            existingMenu.style.cssText = `
+                position: absolute;
+                width: ${customWidth}px;
+                max-height: ${customHeight}px;
+                left: ${buttonRect.left - dialogRect.left}px;
+                top: ${buttonRect.bottom - dialogRect.top}px;
+                background: #161b22;
+                border: 1px solid #30363d;
+                border-radius: 3px;
+                overflow-y: auto;
+                z-index: 1001;
+                padding: 5px 0;
+            `;
+
+            if (!existingMenu.children.length) {
+                items.forEach(item => {
+                    const option = document.createElement('div');
+                    option.className = 'dropdown-item';
+                    option.style.cssText = `
+                        color: #c9d1d9;
+                        padding: 8px 15px;
+                        cursor: pointer;
+                    `;
+                    option.textContent = item;
+                    
+                    option.onmouseover = () => option.style.backgroundColor = '#1f242b';
+                    option.onmouseout = () => option.style.backgroundColor = 'transparent';
+                    
+                    option.onclick = () => {
+                        if (onSelect) onSelect(item);
+                        button.querySelector('span:first-child').textContent = item;
+                        existingMenu.style.display = 'none';
+                        this.activeDropdown = null;
+                    };
+                    
+                    existingMenu.appendChild(option);
+                });
+            }
+
+            this.activeDropdown = existingMenu;
+
+            setTimeout(() => {
+                window.addEventListener('click', (e) => {
+                    if (!dropdownContainer.contains(e.target)) {
+                        existingMenu.style.display = 'none';
+                        this.activeDropdown = null;
+                    }
+                }, { once: true });
+            }, 0);
+        } else {
+            this.activeDropdown = null;
+        }
+    }
+}
+
+// Initialize dialog dropdown manager
+const dialogDropdownManager = new DialogDropdownManager();
+
 class DragAndDropManager {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -1625,43 +1711,110 @@ handleDrop(event) {
         return container;
     }
 
-    createDropdownContainer(label, currentValue, options) {
-        const container = document.createElement('div');
-        container.style.cssText = 'display: flex; align-items: center; gap: 10px;';
-        
-        const labelElement = document.createElement('span');
-        labelElement.textContent = label;
-        labelElement.style.cssText = 'color: #c9d1d9;';
-        
-        const dropdownContainer = document.createElement('div');
-        dropdownContainer.className = 'dropdown';
-        dropdownContainer.style.cssText = 'position: relative;';
+createDropdownContainer(label, currentValue, options) {
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+    
+    const labelElement = document.createElement('span');
+    labelElement.textContent = label;
+    labelElement.style.color = '#c9d1d9';
+    
+    const dropdownContainer = document.createElement('div');
+    dropdownContainer.className = 'dropdown';
+    dropdownContainer.style.position = 'relative';
+    
+    const button = document.createElement('button');
+    button.className = 'button';
+    button.style.cssText = `
+        width: 120px;
+        height: 35px;
+        text-align: left;
+        padding-left: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #0d1117;
+        color: #c9d1d9;
+        border: 1px solid #30363d;
+        border-radius: 3px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+    `;
+    
+    button.innerHTML = `
+        <span>${currentValue}</span>
+        <span style="transform: rotate(90deg); margin-right: 5px; font-size: 18px;">&gt;</span>
+    `;
 
-        const button = document.createElement('button');
-        button.className = 'button';
-        button.type = 'button';
-        button.onclick = (event) => dialogDropdownManager.toggle(event, {
-            items: options,
-            onSelect: (selectedText) => {
-                button.querySelector('span:first-child').textContent = selectedText;
-            }
-        });
-        button.innerHTML = `
-            <span>${currentValue}</span>
-            <span style="transform: rotate(90deg); margin-right: 5px; font-size: 18px;">&gt;</span>
+    const dropdownMenu = document.createElement('ul');
+    dropdownMenu.className = 'dropdown-menu custom-scrollbar';
+    dropdownMenu.style.cssText = `
+        display: none;
+        position: absolute;
+        background-color: #0d1117;
+        border: 1px solid #30363d;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 2000;
+        width: 120px;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        top: 100%;
+        left: 0;
+    `;
+
+    options.forEach(option => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'dropdown-item';
+        a.href = '#';
+        a.style.cssText = `
+            color: #c9d1d9;
+            display: block;
+            padding: 8px 10px;
+            text-decoration: none;
+            text-align: left;
         `;
+        a.textContent = option;
+        
+        a.onmouseover = () => a.style.backgroundColor = '#58a6ff';
+        a.onmouseout = () => a.style.backgroundColor = 'transparent';
+        
+        a.onclick = (e) => {
+            e.preventDefault();
+            button.querySelector('span:first-child').textContent = option;
+            dropdownMenu.style.display = 'none';
+        };
+        
+        li.appendChild(a);
+        dropdownMenu.appendChild(li);
+    });
 
-        const dropdownMenu = document.createElement('ul');
-        dropdownMenu.className = 'dropdown-menu custom-scrollbar';
+    button.onclick = (e) => {
+        e.stopPropagation();
+        const isVisible = dropdownMenu.style.display === 'block';
+        dropdownMenu.style.display = isVisible ? 'none' : 'block';
         
-        dropdownContainer.appendChild(button);
-        dropdownContainer.appendChild(dropdownMenu);
-        
-        container.appendChild(labelElement);
-        container.appendChild(dropdownContainer);
-        
-        return container;
-    }
+        if (!isVisible) {
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!dropdownContainer.contains(e.target)) {
+                    dropdownMenu.style.display = 'none';
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+    };
+
+    dropdownContainer.appendChild(button);
+    dropdownContainer.appendChild(dropdownMenu);
+    
+    container.appendChild(labelElement);
+    container.appendChild(dropdownContainer);
+    
+    return container;
+}
 
     createSleepContent(settings) {
         const container = document.createElement('div');
