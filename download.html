@@ -46,7 +46,7 @@
                 <h2>Select Macro Version</h2>
                 <select id="macro-version" class="download-select">
                     <option value="" disabled selected>Choose a version</option>
-                    <option value="WaveBound V1.83">Version 1.83</option>
+                    <option value="WaveBound V1.84">Version 1.84</option>
                 </select>
                 <select id="file-type" class="download-select">
                     <option value="" disabled selected>Choose file type</option>
@@ -67,7 +67,7 @@
             const selectedVersion = document.getElementById('macro-version').value;
             const selectedFileType = document.getElementById('file-type').value;
             if (selectedFileType === 'exe') {
-                window.open('https://github.com/WaveBound/WaveBound/releases/download/V1.83/WaveBound.V1.83.exe', '_blank');
+                window.open('https://github.com/WaveBound/WaveBound/releases/download/V1.84/WaveBound.V1.84.exe', '_blank');
             } else if (selectedVersion && selectedFileType) {
                 const fileUrl = `macros/${selectedVersion}.${selectedFileType}`;
                 fetch(fileUrl)
