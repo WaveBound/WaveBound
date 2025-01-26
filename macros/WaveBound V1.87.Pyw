@@ -3049,21 +3049,25 @@ class MacroActions:
         
     @staticmethod
     def look(direction, duration):
-        pydirectinput.PAUSE = 0.0
-        start_x, start_y = win32api.GetCursorPos()
-        move_amount = -5 if direction == 'up' else 5
-        pydirectinput.mouseDown(button='right')
+        original_pause = pydirectinput.PAUSE
+        try:
+            pydirectinput.PAUSE = 0.0
+            start_x, start_y = win32api.GetCursorPos()
+            move_amount = -5 if direction == 'up' else 5
+            pydirectinput.mouseDown(button='right')
     
-        for _ in range(15):
-            win32api.SetCursorPos((start_x, start_y))
-            time.sleep(0.001)
+            for _ in range(15):
+                win32api.SetCursorPos((start_x, start_y))
+                time.sleep(0.001)
     
-        start_time = time.time()
-        while time.time() - start_time < float(duration):
-            pydirectinput.moveRel(0, move_amount, relative=True)
-            time.sleep(0.001)
+            start_time = time.time()
+            while time.time() - start_time < float(duration):
+                pydirectinput.moveRel(0, move_amount, relative=True)
+                time.sleep(0.001)
     
-        pydirectinput.mouseUp(button='right')
+            pydirectinput.mouseUp(button='right')
+        finally:
+            pydirectinput.PAUSE = original_pause
 
     @staticmethod
     def key_hold(key, duration):
@@ -3354,10 +3358,23 @@ class Api:
             print("Macro is already running!")
             return
 
+        # Check if custom macro is enabled and set to run on start
+        custom_settings = window.evaluate_js("""
+            ({
+                enabled: document.querySelector('#custom .checkbox').checked,
+                onStart: document.getElementById('onStartCheck').checked
+            })
+        """)
+
         print("Starting macro...")
         self.reader = easyocr.Reader(['en'])
         self.macro_running = True
         self.stop_event.clear()
+
+        # Run custom macro in separate thread if enabled
+        if custom_settings['enabled'] and custom_settings['onStart']:
+            print("Running custom macro sequence on start")
+            threading.Thread(target=lambda: ExecuteMacro(self).run_macro_sequence(), daemon=True).start()
 
         # Reset time tracking and run counter
         self.last_replay_time = time.time()
@@ -3367,7 +3384,7 @@ class Api:
         self.completed_upgrades = {}
         self.completed_abilities = {}
         self.completed_placements = set()
-        self.ability_timers.clear()
+        self.ability_timers.clear()  # Clear the ability timers list
     
         # Clear all queues
         while not self.upgrade_queue.empty():
@@ -3379,24 +3396,10 @@ class Api:
         
         self.highest_wave_seen = 0
         self.current_upgrade = None
-        self.macro_loop_interval = 10
+        self.macro_loop_interval = 10  # milliseconds
     
-        # Start main macro loop thread
+        # Run the macro loop in a separate thread
         threading.Thread(target=self.run_macro_loop, daemon=True).start()
-    
-        # Check if custom macro is enabled and set to run on start
-        custom_settings = window.evaluate_js("""
-            ({
-                enabled: document.querySelector('#custom .checkbox').checked,
-                onStart: document.getElementById('onStartCheck').checked
-            })
-        """)
-    
-        # Run custom macro in same thread if enabled
-        if custom_settings['enabled'] and custom_settings['onStart']:
-            print("Running custom macro sequence on start")
-            ExecuteMacro(self).run_macro_sequence()
-    
         print("Macro started successfully")
 
     def stop_macro(self):
