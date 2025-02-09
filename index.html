@@ -32,13 +32,17 @@
                     <div class="download-card">
                         <h3>WaveBound V1.87</h3>
                         <div class="download-buttons">
-                            <a href="https://github.com/WaveBound/WaveBound/releases/download/V1.87/WaveBound.V1.87.exe" class="download-button">Download</a>
+                            <a href="https://github.com/WaveBound/WaveBound/releases/download/V1.87/WaveBound.V1.87.exe" 
+                               class="download-button"
+                               onclick="incrementDownloads('V1.87')">Download</a>
                         </div>
                     </div>
                     <div class="download-card">
                         <h3>WaveBound MiniMacro</h3>
                         <div class="download-buttons">
-                            <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe" class="download-button">Download</a>
+                            <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe" 
+                               class="download-button"
+                               onclick="incrementDownloads('MiniMacro')">Download</a>
                         </div>
                     </div>
                 </section>
@@ -67,10 +71,32 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        // Reference to active users in database
+        // References to database nodes
         const activeUsersRef = database.ref('active_users');
+        const downloadsRef = database.ref('downloads');
         
-        // Update active users display
+        // Function to increment downloads with version tracking
+        function incrementDownloads(version) {
+            // Increment total downloads
+            downloadsRef.child('total').transaction((current) => {
+                return (current || 0) + 1;
+            });
+            
+            // Increment version-specific downloads
+            downloadsRef.child(`versions/${version}`).transaction((current) => {
+                return (current || 0) + 1;
+            });
+        }
+        
+        // Function to update downloads display
+        function updateDownloadsDisplay() {
+            downloadsRef.child('total').once('value').then((snapshot) => {
+                const downloads = snapshot.val() || 0;
+                document.getElementById('totalDownloads').textContent = downloads;
+            });
+        }
+        
+        // Function to update active users display
         function updateActiveUsers() {
             activeUsersRef.once('value').then((snapshot) => {
                 const users = snapshot.val() || {};
@@ -79,9 +105,13 @@
             });
         }
         
-        // Update count every 5 seconds
+        // Update counts regularly
         setInterval(updateActiveUsers, 1000);
-        updateActiveUsers(); // Initial update
+        setInterval(updateDownloadsDisplay, 5000);
+        
+        // Initial updates
+        updateActiveUsers();
+        updateDownloadsDisplay();
     </script>
 </body>
 </html>
