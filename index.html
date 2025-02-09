@@ -34,7 +34,7 @@
                         <div class="download-buttons">
                             <a href="https://github.com/WaveBound/WaveBound/releases/download/V1.87/WaveBound.V1.87.exe" 
                                class="download-button"
-                               onclick="incrementDownloads('V1.87')">Download</a>
+                               onclick="incrementDownloads('wavebound', event)">Download</a>
                         </div>
                     </div>
                     <div class="download-card">
@@ -42,7 +42,7 @@
                         <div class="download-buttons">
                             <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe" 
                                class="download-button"
-                               onclick="incrementDownloads('MiniMacro')">Download</a>
+                               onclick="incrementDownloads('minimacro', event)">Download</a>
                         </div>
                     </div>
                 </section>
@@ -76,16 +76,34 @@
         const downloadsRef = database.ref('downloads');
         
         // Function to increment downloads with version tracking
-        function incrementDownloads(version) {
-            // Increment total downloads
-            downloadsRef.child('total').transaction((current) => {
-                return (current || 0) + 1;
+        function incrementDownloads(version, event) {
+            event.preventDefault(); // Prevent immediate link click
+            
+            // Get the download URL from the link
+            const downloadUrl = event.target.href;
+            
+            // Create a hidden download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.download = version === 'minimacro' ? 'WaveBound.MiniMacro.exe' : 'WaveBound.V1.87.exe';
+            
+            // Track the download completion
+            downloadLink.addEventListener('click', () => {
+                // Increment total downloads
+                downloadsRef.child('total').transaction((current) => {
+                    return (current || 0) + 1;
+                });
+                
+                // Increment version-specific downloads
+                downloadsRef.child(`versions/${version}`).transaction((current) => {
+                    return (current || 0) + 1;
+                });
             });
             
-            // Increment version-specific downloads
-            downloadsRef.child(`versions/${version}`).transaction((current) => {
-                return (current || 0) + 1;
-            });
+            // Trigger the download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
         
         // Function to update downloads display
