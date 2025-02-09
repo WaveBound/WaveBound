@@ -77,33 +77,37 @@
         
         // Function to increment downloads with version tracking
         function incrementDownloads(version, event) {
-            event.preventDefault(); // Prevent immediate link click
+            event.preventDefault();
             
-            // Get the download URL from the link
-            const downloadUrl = event.target.href;
-            
-            // Create a hidden download link
-            const downloadLink = document.createElement('a');
-            downloadLink.href = downloadUrl;
-            downloadLink.download = version === 'minimacro' ? 'WaveBound.MiniMacro.exe' : 'WaveBound.V1.87.exe';
-            
-            // Track the download completion
-            downloadLink.addEventListener('click', () => {
-                // Increment total downloads
-                downloadsRef.child('total').transaction((current) => {
-                    return (current || 0) + 1;
+            // Create a fetch request to check if the file is actually downloaded
+            fetch(event.target.href)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.download = version === 'minimacro' ? 'WaveBound.MiniMacro.exe' : 'WaveBound.V1.87.exe';
+                    
+                    // Only increment counters after successful download
+                    downloadLink.addEventListener('click', () => {
+                        setTimeout(() => {
+                            // Increment total downloads
+                            downloadsRef.child('total').transaction((current) => {
+                                return (current || 0) + 1;
+                            });
+                            
+                            // Increment version-specific downloads
+                            downloadsRef.child(`versions/${version}`).transaction((current) => {
+                                return (current || 0) + 1;
+                            });
+                        }, 1000); // Small delay to ensure download started
+                    });
+                    
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    window.URL.revokeObjectURL(url);
                 });
-                
-                // Increment version-specific downloads
-                downloadsRef.child(`versions/${version}`).transaction((current) => {
-                    return (current || 0) + 1;
-                });
-            });
-            
-            // Trigger the download
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
         }
         
         // Function to update downloads display
