@@ -33,11 +33,14 @@ header h1 {
 
 main {
     flex: 1;
-    padding: 3rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+
 .content-container {
-    width: 80%;
+    width: 65%;
     margin: 0 auto;
     background-color: #161b22;
     border-radius: 5px;
