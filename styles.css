@@ -16,7 +16,6 @@ body {
     flex-direction: column;
     width: 100vw;
     margin: 0 auto;
-    padding: clamp(10px, 2vw, 20px);
 }
 
 header {
@@ -34,13 +33,11 @@ header h1 {
 
 main {
     flex: 1;
-    padding: clamp(1rem, 3vw, 2rem) 0;
 }
 
 .content-container {
     width: 80%;
     margin: 0 auto;
-    padding: clamp(1rem, 3vw, 2rem);
     background-color: #161b22;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -87,7 +84,6 @@ main {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
     gap: clamp(1rem, 3vw, 2rem);
-    padding: clamp(1rem, 3vw, 2rem);
 }
 
 .download-card {
