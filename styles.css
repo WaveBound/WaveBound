@@ -33,6 +33,7 @@ header h1 {
 
 main {
     flex: 1;
+    padding: 3rem 0;
 }
 
 .content-container {
