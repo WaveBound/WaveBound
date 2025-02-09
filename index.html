@@ -52,8 +52,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
-    <!-- Keep the existing HTML structure, just update the Firebase script part -->
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBgN0hPVpQgU5ZIkYbHAT_GWBcaYEw2i9Y",
@@ -76,22 +74,13 @@
         function updateActiveUsers() {
             activeUsersRef.once('value').then((snapshot) => {
                 const users = snapshot.val() || {};
-                const currentTime = Date.now() / 1000; // Convert to seconds
-                let activeCount = 0;
-                
-                // Count users active in last 30 seconds
-                Object.values(users).forEach(lastActive => {
-                    if (currentTime - lastActive <= 30) {
-                        activeCount++;
-                    }
-                });
-                
+                const activeCount = Object.keys(users).length;
                 document.getElementById('activeUsers').textContent = activeCount;
             });
         }
         
         // Update count every 5 seconds
-        setInterval(updateActiveUsers, 5000);
+        setInterval(updateActiveUsers, 1000);
         updateActiveUsers(); // Initial update
     </script>
 </body>
