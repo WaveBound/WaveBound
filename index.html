@@ -34,7 +34,8 @@
                         <div class="download-buttons">
                             <a href="https://github.com/WaveBound/WaveBound/releases/download/V1.87/WaveBound.V1.87.exe" 
                                class="download-button"
-                               onclick="incrementDownloads('V1.87')">Download</a>
+                               download
+                               onclick="incrementDownloads('V1_87'); return true;">Download</a>
                         </div>
                     </div>
                     <div class="download-card">
@@ -42,7 +43,8 @@
                         <div class="download-buttons">
                             <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe" 
                                class="download-button"
-                               onclick="incrementDownloads('MiniMacro')">Download</a>
+                               download
+                               onclick="incrementDownloads('MiniMacro'); return true;">Download</a>
                         </div>
                     </div>
                 </section>
@@ -77,6 +79,8 @@
         
         // Function to increment downloads with version tracking
         function incrementDownloads(version) {
+            console.log('Download initiated for version:', version);
+            
             // Increment total downloads
             downloadsRef.child('total').transaction((current) => {
                 return (current || 0) + 1;
