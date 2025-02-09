@@ -52,6 +52,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
+    <!-- Keep the existing HTML structure, just update the Firebase script part -->
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBgN0hPVpQgU5ZIkYbHAT_GWBcaYEw2i9Y",
@@ -62,36 +64,35 @@
             messagingSenderId: "1027474963613",
             appId: "1:1027474963613:web:d64f561ecd3562ee3b0e45"
         };
-
+    
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        // Generate a unique ID for this user session
-        const userId = Math.random().toString(36).substr(2, 9);
-        
         // Reference to active users in database
-        const activeUsersRef = database.ref('activeUsers');
-        const userRef = database.ref(`users/${userId}`);
-        
-        // Track user connections
-        const connectedRef = database.ref('.info/connected');
-        connectedRef.on('value', (snap) => {
-            if (snap.val() === true) {
-                userRef.onDisconnect().remove();
-                userRef.set(true);
-                
-                activeUsersRef.transaction((currentCount) => {
-                    return (currentCount || 0) + 1;
-                });
-            }
-        });
+        const activeUsersRef = database.ref('active_users');
         
         // Update active users display
-        activeUsersRef.on('value', (snapshot) => {
-            const count = snapshot.val() || 0;
-            document.getElementById('activeUsers').textContent = count;
-        });
+        function updateActiveUsers() {
+            activeUsersRef.once('value').then((snapshot) => {
+                const users = snapshot.val() || {};
+                const currentTime = Date.now() / 1000; // Convert to seconds
+                let activeCount = 0;
+                
+                // Count users active in last 30 seconds
+                Object.values(users).forEach(lastActive => {
+                    if (currentTime - lastActive <= 30) {
+                        activeCount++;
+                    }
+                });
+                
+                document.getElementById('activeUsers').textContent = activeCount;
+            });
+        }
+        
+        // Update count every 5 seconds
+        setInterval(updateActiveUsers, 5000);
+        updateActiveUsers(); // Initial update
     </script>
 </body>
 </html>
