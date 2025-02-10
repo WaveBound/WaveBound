@@ -111,29 +111,27 @@
             }
 
             clearInterval(window[animationTimer]);
-
-            const range = end - start;
+        
             const increment = end > start ? 1 : -1;
-            
-            let stepSize = 1;
-            if (range > 1000000) {  // Over 1M
-                stepSize = 5000;
-            } else if (range > 500000) {  // Over 500K
-                stepSize = 2500;
-            } else if (range > 250000) {  // Over 250K
-                stepSize = 1500;
-            } else if (range > 100000) {  // Over 100K
-                stepSize = 1000;
-            } else if (range > 10000) {  // Over 10K
-                stepSize = 100;
-            } else if (range > 1000) {  // Over 1K
-                stepSize = 10;
-            }
-
-            const stepTime = 10;
             let current = start;
 
             window[animationTimer] = setInterval(() => {
+                // Dynamic step size based on current number
+                let stepSize = 1;
+                if (current > 1000000) {
+                    stepSize = 5000;
+                } else if (current > 500000) {
+                    stepSize = 2500;
+                } else if (current > 250000) {
+                    stepSize = 1000;
+                } else if (current > 100000) {
+                    stepSize = 500;
+                } else if (current > 10000) {
+                    stepSize = 50;
+                } else if (current > 1000) {
+                    stepSize = 5;
+                }
+
                 current += (increment * stepSize);
                 
                 if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
@@ -149,7 +147,7 @@
                         isUserAnimating = false;
                     }
                 }
-            }, stepTime);
+            }, 10);
         }
 
         function incrementDownloads(version) {
