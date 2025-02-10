@@ -103,7 +103,7 @@
 
         function animateValue(element, start, end, duration, animationTimer) {
             if (start === end) return;
-
+        
             if (animationTimer === 'downloadAnimationTimer') {
                 isDownloadAnimating = true;
             } else if (animationTimer === 'userAnimationTimer') {
@@ -111,33 +111,20 @@
             }
 
             clearInterval(window[animationTimer]);
-        
+
             const increment = end > start ? 1 : -1;
             let current = start;
 
             window[animationTimer] = setInterval(() => {
-                // Dynamic step size based on current number
-                let stepSize = 1;
-                if (current > 1000000) {
-                    stepSize = 5000;
-                } else if (current > 500000) {
-                    stepSize = 2500;
-                } else if (current > 250000) {
-                    stepSize = 1000;
-                } else if (current > 100000) {
-                    stepSize = 500;
-                } else if (current > 10000) {
-                    stepSize = 50;
-                } else if (current > 1000) {
-                    stepSize = 5;
-                }
-
+                // Dynamic scaling based on current value with special handling for small numbers
+                let stepSize = current < 1000 ? 1 : Math.max(1, Math.floor(current * 0.01));
+        
                 current += (increment * stepSize);
-                
+        
                 if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
                     current = end;
                 }
-                
+        
                 element.textContent = formatNumber(current);
                 if (current === end) {
                     clearInterval(window[animationTimer]);
@@ -149,6 +136,7 @@
                 }
             }, 10);
         }
+
 
         function incrementDownloads(version) {
             console.log('Download initiated for version:', version);
