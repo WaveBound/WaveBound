@@ -47,11 +47,17 @@ main {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     color: #c9d1d9;
     padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
 }
 
 .hero {
     text-align: center;
-    padding: clamp(1rem, 3vw, 2rem) 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero h2 {
