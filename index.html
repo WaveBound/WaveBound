@@ -158,12 +158,12 @@
             animateValue(element, currentValue, downloads, 'downloadAnimationTimer');
         });
 
-        activeUsersRef.on('value', (snapshot) => {
-            const users = snapshot.val() || {};
-            const activeCount = Object.keys(users).length;
+        // Replace the activeUsersRef listener with this:
+        activeUsersRef.child('total').on('value', (snapshot) => {
+            const totalUsers = snapshot.val() || 0;
             const element = document.getElementById('activeUsers');
             const currentValue = parseFormattedNumber(element.textContent);
-            animateValue(element, currentValue, activeCount, 'userAnimationTimer');
+            animateValue(element, currentValue, totalUsers, 'userAnimationTimer');
         });
     </script>
 </body>
