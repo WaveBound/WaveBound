@@ -114,20 +114,19 @@
 
             const increment = end > start ? 1 : -1;
             const totalDifference = Math.abs(end - start);
-            const totalSteps = 300; // 3 seconds * 100 steps per second
+            const totalSteps = 500; // 5 seconds * 100 steps per second
             const baseStepSize = totalDifference / totalSteps;
             let current = start;
 
             window[animationTimer] = setInterval(() => {
-                // Calculate step size to complete in 3 seconds
                 let stepSize = Math.max(1, Math.floor(baseStepSize));
-        
+                
                 current += (increment * stepSize);
-        
+                
                 if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
                     current = end;
                 }
-        
+                
                 element.textContent = formatNumber(current);
                 if (current === end) {
                     clearInterval(window[animationTimer]);
@@ -158,7 +157,7 @@
                 const downloads = snapshot.val() || 0;
                 const element = document.getElementById('totalDownloads');
                 const currentValue = parseFormattedNumber(element.textContent);
-                animateValue(element, currentValue, downloads, null, 'downloadAnimationTimer');
+                animateValue(element, currentValue, downloads, 'downloadAnimationTimer');
             });
         }
         
@@ -169,15 +168,18 @@
                 const activeCount = Object.keys(users).length;
                 const element = document.getElementById('activeUsers');
                 const currentValue = parseFormattedNumber(element.textContent);
-                animateValue(element, currentValue, activeCount, null, 'userAnimationTimer');
+                animateValue(element, currentValue, activeCount, 'userAnimationTimer');
             });
         }
-        
-        setInterval(updateActiveUsers, 5000);
-        setInterval(updateDownloadsDisplay, 5000);
-        
-        updateActiveUsers();
-        updateDownloadsDisplay();
+
+        // Immediate data load and recurring updates setup
+        document.addEventListener('DOMContentLoaded', () => {
+            updateActiveUsers();
+            updateDownloadsDisplay();
+            
+            setInterval(updateActiveUsers, 5000);
+            setInterval(updateDownloadsDisplay, 5000);
+        });
     </script>
 </body>
 </html>
