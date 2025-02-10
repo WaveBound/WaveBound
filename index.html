@@ -92,23 +92,55 @@
             });
         }
         
-        // Function to update downloads display
+        // Add these functions right after your Firebase config
+
+        // Number formatting function
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(2) + 'K';
+            }
+            return num;
+        }
+
+        // Animated counter function
+        function animateValue(element, start, end, duration) {
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+    
+            const timer = setInterval(() => {
+                current += increment;
+                element.textContent = formatNumber(current);
+                if (current === end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+
+        // Update the existing functions with animation
         function updateDownloadsDisplay() {
             downloadsRef.child('total').once('value').then((snapshot) => {
                 const downloads = snapshot.val() || 0;
-                document.getElementById('totalDownloads').textContent = downloads;
+                const element = document.getElementById('totalDownloads');
+                const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
+                animateValue(element, currentValue, downloads, 1000);
             });
         }
         
-        // Function to update active users display
         function updateActiveUsers() {
             activeUsersRef.once('value').then((snapshot) => {
                 const users = snapshot.val() || {};
                 const activeCount = Object.keys(users).length;
-                document.getElementById('activeUsers').textContent = activeCount;
+                const element = document.getElementById('activeUsers');
+                const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
+                animateValue(element, currentValue, activeCount, 1000);
             });
         }
         
+                
         // Update counts regularly
         setInterval(updateActiveUsers, 5000);
         setInterval(updateDownloadsDisplay, 5000);
