@@ -116,9 +116,17 @@
             const increment = end > start ? 1 : -1;
             
             let stepSize = 1;
-            if (range > 10000) {
+            if (range > 1000000) {  // Over 1M
+                stepSize = 10000;
+            } else if (range > 500000) {  // Over 500K
+                stepSize = 5000;
+            } else if (range > 250000) {  // Over 250K
+                stepSize = 2500;
+            } else if (range > 100000) {  // Over 100K
+                stepSize = 1000;
+            } else if (range > 10000) {  // Over 10K
                 stepSize = 100;
-            } else if (range > 1000) {
+            } else if (range > 1000) {  // Over 1K
                 stepSize = 10;
             }
 
