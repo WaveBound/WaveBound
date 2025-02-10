@@ -76,23 +76,6 @@
         // References to database nodes
         const activeUsersRef = database.ref('active_users');
         const downloadsRef = database.ref('downloads');
-        
-        // Function to increment downloads with version tracking
-        function incrementDownloads(version) {
-            console.log('Download initiated for version:', version);
-            
-            // Increment total downloads
-            downloadsRef.child('total').transaction((current) => {
-                return (current || 0) + 1;
-            });
-            
-            // Increment version-specific downloads
-            downloadsRef.child(`versions/${version}`).transaction((current) => {
-                return (current || 0) + 1;
-            });
-        }
-        
-        // Add these functions right after your Firebase config
 
         // Number formatting function
         function formatNumber(num) {
@@ -110,7 +93,7 @@
             const increment = end > start ? 1 : -1;
             const stepTime = Math.abs(Math.floor(duration / range));
             let current = start;
-    
+            
             const timer = setInterval(() => {
                 current += increment;
                 element.textContent = formatNumber(current);
@@ -119,8 +102,23 @@
                 }
             }, stepTime);
         }
-
-        // Update the existing functions with animation
+        
+        // Function to increment downloads with version tracking
+        function incrementDownloads(version) {
+            console.log('Download initiated for version:', version);
+            
+            // Increment total downloads
+            downloadsRef.child('total').transaction((current) => {
+                return (current || 0) + 1;
+            });
+            
+            // Increment version-specific downloads
+            downloadsRef.child(`versions/${version}`).transaction((current) => {
+                return (current || 0) + 1;
+            });
+        }
+        
+        // Function to update downloads display
         function updateDownloadsDisplay() {
             downloadsRef.child('total').once('value').then((snapshot) => {
                 const downloads = snapshot.val() || 0;
@@ -130,6 +128,7 @@
             });
         }
         
+        // Function to update active users display
         function updateActiveUsers() {
             activeUsersRef.once('value').then((snapshot) => {
                 const users = snapshot.val() || {};
@@ -140,7 +139,6 @@
             });
         }
         
-                
         // Update counts regularly
         setInterval(updateActiveUsers, 5000);
         setInterval(updateDownloadsDisplay, 5000);
