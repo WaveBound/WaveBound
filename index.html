@@ -61,6 +61,8 @@
     <script>
         let downloadAnimationTimer;
         let userAnimationTimer;
+        let isDownloadAnimating = false;
+        let isUserAnimating = false;
 
         const firebaseConfig = {
             apiKey: "AIzaSyBgN0hPVpQgU5ZIkYbHAT_GWBcaYEw2i9Y",
@@ -72,15 +74,12 @@
             appId: "1:1027474963613:web:d64f561ecd3562ee3b0e45"
         };
     
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        // References to database nodes
         const activeUsersRef = database.ref('active_users');
         const downloadsRef = database.ref('downloads');
 
-        // Number formatting function
         function formatNumber(num) {
             if (num >= 1000000) {
                 return (num / 1000000).toFixed(2) + 'M';
@@ -90,45 +89,50 @@
             return num;
         }
 
-// Updated animateValue function
         function animateValue(element, start, end, duration, animationTimer) {
-            // Don't animate if the numbers are the same
             if (start === end) return;
-    
+
+            if (animationTimer === 'downloadAnimationTimer') {
+                isDownloadAnimating = true;
+            } else if (animationTimer === 'userAnimationTimer') {
+                isUserAnimating = true;
+            }
+
             clearInterval(window[animationTimer]);
-    
+
             const range = end - start;
             const increment = end > start ? 1 : -1;
             const stepTime = Math.abs(Math.floor(duration / range));
             let current = start;
-    
+
             window[animationTimer] = setInterval(() => {
                 current += increment;
                 element.textContent = formatNumber(current);
                 if (current === end) {
                     clearInterval(window[animationTimer]);
+                    if (animationTimer === 'downloadAnimationTimer') {
+                        isDownloadAnimating = false;
+                    } else if (animationTimer === 'userAnimationTimer') {
+                        isUserAnimating = false;
+                    }
                 }
             }, stepTime);
         }
 
-        
-        // Function to increment downloads with version tracking
         function incrementDownloads(version) {
             console.log('Download initiated for version:', version);
             
-            // Increment total downloads
             downloadsRef.child('total').transaction((current) => {
                 return (current || 0) + 1;
             });
             
-            // Increment version-specific downloads
             downloadsRef.child(`versions/${version}`).transaction((current) => {
                 return (current || 0) + 1;
             });
         }
         
-        // Function to update downloads display
         function updateDownloadsDisplay() {
+            if (isDownloadAnimating) return;
             downloadsRef.child('total').once('value').then((snapshot) => {
                 const downloads = snapshot.val() || 0;
                 const element = document.getElementById('totalDownloads');
@@ -137,8 +141,8 @@
             });
         }
         
-        // Function to update active users display
         function updateActiveUsers() {
+            if (isUserAnimating) return;
             activeUsersRef.once('value').then((snapshot) => {
                 const users = snapshot.val() || {};
                 const activeCount = Object.keys(users).length;
@@ -148,11 +152,9 @@
             });
         }
         
-        // Update counts regularly
         setInterval(updateActiveUsers, 5000);
         setInterval(updateDownloadsDisplay, 5000);
         
-        // Initial updates
         updateActiveUsers();
         updateDownloadsDisplay();
     </script>
