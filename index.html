@@ -59,6 +59,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
     <script>
+        let downloadAnimationTimer;
+        let userAnimationTimer;
+
         const firebaseConfig = {
             apiKey: "AIzaSyBgN0hPVpQgU5ZIkYbHAT_GWBcaYEw2i9Y",
             authDomain: "wavebound-4528f.firebaseapp.com",
@@ -88,17 +91,19 @@
         }
 
         // Animated counter function
-        function animateValue(element, start, end, duration) {
+        function animateValue(element, start, end, duration, animationTimer) {
+            clearInterval(window[animationTimer]);
+            
             const range = end - start;
             const increment = end > start ? 1 : -1;
             const stepTime = Math.abs(Math.floor(duration / range));
             let current = start;
             
-            const timer = setInterval(() => {
+            window[animationTimer] = setInterval(() => {
                 current += increment;
                 element.textContent = formatNumber(current);
                 if (current === end) {
-                    clearInterval(timer);
+                    clearInterval(window[animationTimer]);
                 }
             }, stepTime);
         }
@@ -124,7 +129,7 @@
                 const downloads = snapshot.val() || 0;
                 const element = document.getElementById('totalDownloads');
                 const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
-                animateValue(element, currentValue, downloads, 1000);
+                animateValue(element, currentValue, downloads, 1000, 'downloadAnimationTimer');
             });
         }
         
@@ -135,7 +140,7 @@
                 const activeCount = Object.keys(users).length;
                 const element = document.getElementById('activeUsers');
                 const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
-                animateValue(element, currentValue, activeCount, 1000);
+                animateValue(element, currentValue, activeCount, 1000, 'userAnimationTimer');
             });
         }
         
