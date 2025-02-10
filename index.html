@@ -90,15 +90,18 @@
             return num;
         }
 
-        // Animated counter function
+// Updated animateValue function
         function animateValue(element, start, end, duration, animationTimer) {
+            // Don't animate if the numbers are the same
+            if (start === end) return;
+    
             clearInterval(window[animationTimer]);
-            
+    
             const range = end - start;
             const increment = end > start ? 1 : -1;
             const stepTime = Math.abs(Math.floor(duration / range));
             let current = start;
-            
+    
             window[animationTimer] = setInterval(() => {
                 current += increment;
                 element.textContent = formatNumber(current);
@@ -107,6 +110,7 @@
                 }
             }, stepTime);
         }
+
         
         // Function to increment downloads with version tracking
         function incrementDownloads(version) {
