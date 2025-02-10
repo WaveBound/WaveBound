@@ -114,7 +114,7 @@
 
             const increment = end > start ? 1 : -1;
             const totalDifference = Math.abs(end - start);
-            const totalSteps = 500; // 5 seconds * 100 steps per second
+            const totalSteps = 250; // 5 seconds * 100 steps per second
             const baseStepSize = totalDifference / totalSteps;
             let current = start;
 
@@ -136,7 +136,7 @@
                         isUserAnimating = false;
                     }
                 }
-            }, 10);
+            }, 20);
         }
 
         function incrementDownloads(version) {
