@@ -101,8 +101,6 @@
         }
 
         function animateValue(element, start, end, animationTimer) {
-            element.textContent = formatNumber(start);
-            
             if (start === end) return;
 
             if (animationTimer === 'downloadAnimationTimer') {
@@ -113,15 +111,22 @@
 
             clearInterval(window[animationTimer]);
 
-            const duration = 1000;
-            const steps = 50;
-            const stepValue = Math.ceil(Math.abs(end - start) / steps);
+            const increment = end > start ? 1 : -1;
+            const totalDifference = Math.abs(end - start);
+            const totalSteps = 250;
+            const baseStepSize = totalDifference / totalSteps;
             let current = start;
 
-            const animate = () => {
-                current = current < end ? Math.min(current + stepValue, end) : Math.max(current - stepValue, end);
+            window[animationTimer] = setInterval(() => {
+                let stepSize = Math.max(1, Math.floor(baseStepSize));
+                
+                current += (increment * stepSize);
+                
+                if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
+                    current = end;
+                }
+                
                 element.textContent = formatNumber(current);
-
                 if (current === end) {
                     clearInterval(window[animationTimer]);
                     if (animationTimer === 'downloadAnimationTimer') {
@@ -129,12 +134,8 @@
                     } else if (animationTimer === 'userAnimationTimer') {
                         isUserAnimating = false;
                     }
-                    return;
                 }
-            };
-
-            animate();
-            window[animationTimer] = setInterval(animate, duration / steps);
+            }, 20);
         }
 
         function incrementDownloads(version) {
@@ -149,6 +150,7 @@
             });
         }
 
+        // Set up real-time listeners for immediate updates
         downloadsRef.child('total').on('value', (snapshot) => {
             const downloads = snapshot.val() || 0;
             const element = document.getElementById('totalDownloads');
