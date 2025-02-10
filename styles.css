@@ -47,14 +47,12 @@ main {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     color: #c9d1d9;
     padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: auto;
 }
 
 .hero {
     text-align: center;
-    margin: auto 0;
+    padding: clamp(2rem, 5vw, 3rem) 0;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
 }
 
 .hero h2 {
