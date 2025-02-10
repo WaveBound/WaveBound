@@ -101,9 +101,9 @@
             return parseFloat(numStr);
         }
 
-        function animateValue(element, start, end, duration, animationTimer) {
+        function animateValue(element, start, end, animationTimer) {
             if (start === end) return;
-        
+
             if (animationTimer === 'downloadAnimationTimer') {
                 isDownloadAnimating = true;
             } else if (animationTimer === 'userAnimationTimer') {
@@ -113,11 +113,14 @@
             clearInterval(window[animationTimer]);
 
             const increment = end > start ? 1 : -1;
+            const totalDifference = Math.abs(end - start);
+            const totalSteps = 300; // 3 seconds * 100 steps per second
+            const baseStepSize = totalDifference / totalSteps;
             let current = start;
 
             window[animationTimer] = setInterval(() => {
-                // Dynamic scaling based on current value with special handling for small numbers
-                let stepSize = current < 1000 ? 1 : Math.max(1, Math.floor(current * 0.01));
+                // Calculate step size to complete in 3 seconds
+                let stepSize = Math.max(1, Math.floor(baseStepSize));
         
                 current += (increment * stepSize);
         
@@ -136,7 +139,6 @@
                 }
             }, 10);
         }
-
 
         function incrementDownloads(version) {
             console.log('Download initiated for version:', version);
