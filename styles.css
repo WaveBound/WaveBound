@@ -51,8 +51,8 @@ main {
 
 .hero {
     text-align: center;
-    padding: clamp(2rem, 5vw, 3rem) 0;
-    margin-bottom: clamp(2rem, 5vw, 3rem);
+    padding: clamp(1rem, 2.5vw, 1.5rem) 0;
+    margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .hero h2 {
