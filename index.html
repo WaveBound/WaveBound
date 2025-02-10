@@ -89,6 +89,18 @@
             return num;
         }
 
+        function parseFormattedNumber(formattedNum) {
+            if (typeof formattedNum === 'number') return formattedNum;
+            
+            const numStr = formattedNum.toString();
+            if (numStr.endsWith('K')) {
+                return parseFloat(numStr.replace('K', '')) * 1000;
+            } else if (numStr.endsWith('M')) {
+                return parseFloat(numStr.replace('M', '')) * 1000000;
+            }
+            return parseFloat(numStr);
+        }
+
         function animateValue(element, start, end, duration, animationTimer) {
             if (start === end) return;
 
@@ -136,7 +148,7 @@
             downloadsRef.child('total').once('value').then((snapshot) => {
                 const downloads = snapshot.val() || 0;
                 const element = document.getElementById('totalDownloads');
-                const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
+                const currentValue = parseFormattedNumber(element.textContent);
                 animateValue(element, currentValue, downloads, 1000, 'downloadAnimationTimer');
             });
         }
@@ -147,7 +159,7 @@
                 const users = snapshot.val() || {};
                 const activeCount = Object.keys(users).length;
                 const element = document.getElementById('activeUsers');
-                const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
+                const currentValue = parseFormattedNumber(element.textContent);
                 animateValue(element, currentValue, activeCount, 1000, 'userAnimationTimer');
             });
         }
