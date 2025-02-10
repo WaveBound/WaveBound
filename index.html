@@ -114,11 +114,24 @@
 
             const range = end - start;
             const increment = end > start ? 1 : -1;
-            const stepTime = Math.abs(Math.floor(duration / range));
+            
+            let stepSize = 1;
+            if (range > 10000) {
+                stepSize = 100;
+            } else if (range > 1000) {
+                stepSize = 10;
+            }
+
+            const stepTime = 10;
             let current = start;
 
             window[animationTimer] = setInterval(() => {
-                current += increment;
+                current += (increment * stepSize);
+                
+                if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
+                    current = end;
+                }
+                
                 element.textContent = formatNumber(current);
                 if (current === end) {
                     clearInterval(window[animationTimer]);
@@ -149,7 +162,7 @@
                 const downloads = snapshot.val() || 0;
                 const element = document.getElementById('totalDownloads');
                 const currentValue = parseFormattedNumber(element.textContent);
-                animateValue(element, currentValue, downloads, 1000, 'downloadAnimationTimer');
+                animateValue(element, currentValue, downloads, null, 'downloadAnimationTimer');
             });
         }
         
@@ -160,7 +173,7 @@
                 const activeCount = Object.keys(users).length;
                 const element = document.getElementById('activeUsers');
                 const currentValue = parseFormattedNumber(element.textContent);
-                animateValue(element, currentValue, activeCount, 1000, 'userAnimationTimer');
+                animateValue(element, currentValue, activeCount, null, 'userAnimationTimer');
             });
         }
         
