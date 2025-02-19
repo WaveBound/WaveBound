@@ -1,57 +1,41 @@
-name: Deploy Website with Firebase Configuration
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger deployment when changes are pushed to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository
-      - name: Checkout repository
+      # Checkout the code from the repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up Node.js (if you use a build system like Webpack or similar)
+      # Set up Node.js (if you need it for build or dependencies)
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'  # Adjust as necessary for your project
 
-      # Set up environment variables for Firebase configuration
-      - name: Set Firebase Secrets
+      # Install dependencies (skip this step if no dependencies)
+      - name: Install dependencies
         run: |
-          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> $GITHUB_ENV
-          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
-          echo "FIREBASE_DATABASE_URL=${{ secrets.FIREBASE_DATABASE_URL }}" >> $GITHUB_ENV
-          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
-          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
-          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
-          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          npm install  # Or any other package manager if you are using one (e.g., yarn)
 
-      # Build your app (skip this if you have no build process)
-      - name: Build App
+      # Build the project (optional, depending on your setup)
+      - name: Build the project
         run: |
-          # Example build step
-          npm install
-          npm run build
+          npm run build  # Run this only if you need a build step (skip if not necessary)
 
-      # Replace Firebase configuration in HTML file
-      - name: Inject Firebase Secrets into HTML
-        run: |
-          sed -i 's/${{ secrets.FIREBASE_API_KEY }}/${FIREBASE_API_KEY}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_AUTH_DOMAIN }}/${FIREBASE_AUTH_DOMAIN}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_DATABASE_URL }}/${FIREBASE_DATABASE_URL}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_PROJECT_ID }}/${FIREBASE_PROJECT_ID}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_STORAGE_BUCKET }}/${FIREBASE_STORAGE_BUCKET}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}/${FIREBASE_MESSAGING_SENDER_ID}/g' path/to/your/index.html
-          sed -i 's/${{ secrets.FIREBASE_APP_ID }}/${FIREBASE_APP_ID}/g' path/to/your/index.html
-
-      # Deploy your app (for example, to GitHub Pages or any hosting service)
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages
-          folder: build
+          branch: gh-pages  # The branch to deploy to (GitHub Pages usually uses `gh-pages`)
+          folder: ./dist    # Folder where your built files are located (adjust if different)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
+
