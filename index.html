@@ -54,117 +54,11 @@
         </footer>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
     <script>
-        let downloadAnimationTimer;
-        let userAnimationTimer;
-        let isDownloadAnimating = false;
-        let isUserAnimating = false;
-
-        // Use environment variables for Firebase configuration
-        const firebaseConfig = {
-            apiKey: process.env.FIREBASE_API_KEY,
-            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-            databaseURL: process.env.FIREBASE_DATABASE_URL,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.FIREBASE_APP_ID
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const activeUsersRef = database.ref('active_users');
-        const downloadsRef = database.ref('downloads');
-
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(2) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(2) + 'K';
-            }
-            return num;
-        }
-
-        function parseFormattedNumber(formattedNum) {
-            if (typeof formattedNum === 'number') return formattedNum;
-            
-            const numStr = formattedNum.toString();
-            if (numStr.endsWith('K')) {
-                return parseFloat(numStr.replace('K', '')) * 1000;
-            } else if (numStr.endsWith('M')) {
-                return parseFloat(numStr.replace('M', '')) * 1000000;
-            }
-            return parseFloat(numStr);
-        }
-
-        function animateValue(element, start, end, animationTimer) {
-            if (start === end) return;
-
-            if (animationTimer === 'downloadAnimationTimer') {
-                isDownloadAnimating = true;
-            } else if (animationTimer === 'userAnimationTimer') {
-                isUserAnimating = true;
-            }
-
-            clearInterval(window[animationTimer]);
-
-            const increment = end > start ? 1 : -1;
-            const totalDifference = Math.abs(end - start);
-            const totalSteps = 250;
-            const baseStepSize = totalDifference / totalSteps;
-            let current = start;
-
-            window[animationTimer] = setInterval(() => {
-                let stepSize = Math.max(1, Math.floor(baseStepSize));
-                
-                current += (increment * stepSize);
-                
-                if ((increment > 0 && current > end) || (increment < 0 && current < end)) {
-                    current = end;
-                }
-                
-                element.textContent = formatNumber(current);
-                if (current === end) {
-                    clearInterval(window[animationTimer]);
-                    if (animationTimer === 'downloadAnimationTimer') {
-                        isDownloadAnimating = false;
-                    } else if (animationTimer === 'userAnimationTimer') {
-                        isUserAnimating = false;
-                    }
-                }
-            }, 20);
-        }
-
         function incrementDownloads(version) {
             console.log('Download initiated for version:', version);
-            
-            downloadsRef.child('total').transaction((current) => {
-                return (current || 0) + 1;
-            });
-            
-            downloadsRef.child(`versions/${version}`).transaction((current) => {
-                return (current || 0) + 1;
-            });
+            // Increment the download count manually or log in some other way if needed
         }
-
-        // Set up real-time listeners for immediate updates
-        downloadsRef.child('total').on('value', (snapshot) => {
-            const downloads = snapshot.val() || 0;
-            const element = document.getElementById('totalDownloads');
-            const currentValue = parseFormattedNumber(element.textContent);
-            animateValue(element, currentValue, downloads, 'downloadAnimationTimer');
-        });
-
-        activeUsersRef.child('total').on('value', (snapshot) => {
-            const totalUsers = snapshot.val() || 0;
-            const element = document.getElementById('activeUsers');
-            const currentValue = parseFormattedNumber(element.textContent);
-            animateValue(element, currentValue, totalUsers, 'userAnimationTimer');
-        });
     </script>
 </body>
 </html>
