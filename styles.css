@@ -112,13 +112,6 @@ body {
     background-clip: text;
 }
 
-.hero-subtitle {
-    font-size: 20px;
-    color: #8b949e;
-    margin-bottom: 50px;
-    font-weight: 400;
-}
-
 .hero-stats {
     display: flex;
     justify-content: center;
@@ -343,16 +336,6 @@ body {
     box-shadow: 0 5px 15px rgba(88, 166, 255, 0.3);
 }
 
-.download-button.primary {
-    background-color: #58a6ff;
-    color: #0d1117;
-}
-
-.download-button.primary:hover {
-    background-color: #4a9eff;
-    box-shadow: 0 5px 20px rgba(88, 166, 255, 0.4);
-}
-
 .file-info {
     display: flex;
     justify-content: space-between;
@@ -488,10 +471,6 @@ body {
         font-size: 32px;
     }
     
-    .hero-subtitle {
-        font-size: 18px;
-    }
-    
     .hero-stats {
         flex-direction: column;
         gap: 30px;
@@ -544,10 +523,6 @@ body {
     
     .hero-title {
         font-size: 28px;
-    }
-    
-    .hero-subtitle {
-        font-size: 16px;
     }
     
     .stat-number {
