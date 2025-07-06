@@ -246,7 +246,7 @@ body {
 
 .card-badge {
     position: absolute;
-    top: +15px;
+    top: -15px;
     left: 50%;
     transform: translateX(-50%);
     background-color: #58a6ff;
