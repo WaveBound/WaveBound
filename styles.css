@@ -39,11 +39,41 @@ body {
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.header-logo-link:hover {
+    transform: scale(1.05);
+}
+
+.header-logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
 .header-left h1 {
     font-size: 24px;
     color: #c9d1d9;
-    display: flex;
-    align-items: center;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+.header-logo-link:hover h1 {
+    color: #58a6ff;
 }
 
 .header-nav {
