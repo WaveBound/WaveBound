@@ -89,7 +89,7 @@
         <div class="hero-content">
             <div class="hero-pill">
                 <span class="pill-dot"></span>
-                v1.0.9 — out now
+                v1.0.9 out now
             </div>
             <h1 class="hero-h1">
                 <div class="line-wrap"><span>Game automation,</span></div>
@@ -97,7 +97,7 @@
             </h1>
             <p class="hero-sub">
                 Record once, run forever. Wavebound handles the clicks,
-                timing, and logic — so you can focus on actually playing.
+                timing, and logic so you can focus on actually playing.
             </p>
             <div class="hero-btns">
                 <a href="#download" class="btn-solid">
@@ -163,14 +163,14 @@
                     <span class="feat-num">01</span>
                     <div class="feat-ico"><i class="fas fa-eye"></i></div>
                     <h3>Screen Reading</h3>
-                    <p>Reads text directly off the screen so macros can react to what's actually happening in-game — no
+                    <p>Reads text directly off the screen so macros can react to what's actually happening in-game. No
                         polling, no guessing.</p>
                 </div>
                 <div class="feat-card" data-reveal data-delay="0.09">
                     <span class="feat-num">02</span>
                     <div class="feat-ico"><i class="fas fa-bolt"></i></div>
                     <h3>Tight Timing</h3>
-                    <p>Clicks land exactly where and when you set them. No OS jitter, no frame delays — just precise,
+                    <p>Clicks land exactly where and when you set them. No OS jitter, no frame delays. Just precise,
                         repeatable input.</p>
                 </div>
                 <div class="feat-card" data-reveal data-delay="0.18">
@@ -195,12 +195,12 @@
         <div class="wrap">
             <div class="s-eyebrow" data-reveal>Download</div>
             <h2 class="s-h2" data-reveal data-delay="0.06">Get the app</h2>
-            <p class="s-sub" data-reveal data-delay="0.12">Two versions — pick what fits.</p>
+            <p class="s-sub" data-reveal data-delay="0.12">Two versions. Pick what fits.</p>
             <div class="dl-grid">
                 <div class="dl-card" data-reveal data-delay="0.06">
                     <div class="dl-body">
                         <h3>Wavebound MiniMacro</h3>
-                        <p>Portable record & playback. No install, no setup — just run it.</p>
+                        <p>Portable record & playback. No install, no setup. Just run it.</p>
                         <ul class="dl-list">
                             <li><i class="fas fa-check"></i>Record & playback</li>
                             <li><i class="fas fa-check"></i>Zero-install portable</li>
@@ -221,7 +221,7 @@
                     <div class="pro-tag">Full Release</div>
                     <div class="dl-body">
                         <h3>Wavebound</h3>
-                        <p>The full package. OCR, scripting, color detection — for when you need real power.</p>
+                        <p>The full package. OCR, scripting, and color detection for when you need real power.</p>
                         <ul class="dl-list">
                             <li><i class="fas fa-check"></i>OCR & screen reading</li>
                             <li><i class="fas fa-check"></i>Advanced Customization</li>
@@ -269,7 +269,7 @@
         const scrollTrack = document.querySelector('.scroll-track');
         const scrollPip = document.querySelector('.scroll-pip');
 
-        // ── Progress bar + scroll-cue ──
+        // Progress bar + scroll-cue
         window.addEventListener('scroll', () => {
             const docH = document.documentElement.scrollHeight - window.innerHeight;
             const prog = docH > 0 ? Math.min(window.scrollY / docH, 1) : 0;
@@ -284,7 +284,7 @@
             if (scrollTrack) scrollTrack.style.opacity = prog > 0.92 ? '0' : '1';
         }, { passive: true });
 
-        // ── Feature card mouse-tracking glow ──
+        // Feature card mouse-tracking glow
         document.querySelectorAll('.feat-card').forEach(card => {
             card.addEventListener('mousemove', e => {
                 const r = card.getBoundingClientRect();
@@ -293,7 +293,7 @@
             });
         });
 
-        // ── Reveal on scroll ──
+        // Reveal on scroll
         const ro = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
@@ -305,7 +305,7 @@
         }, { threshold: 0.1 });
         document.querySelectorAll('[data-reveal]').forEach(el => ro.observe(el));
 
-        // ── Smooth scroll ──
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(a => {
             a.addEventListener('click', e => {
                 const t = document.querySelector(a.getAttribute('href'));
@@ -313,7 +313,7 @@
             });
         });
 
-        // ── Random badge spawner within corner brackets ──
+        // Random badge spawner within corner brackets
         function initBadges() {
             const hero = document.querySelector('.hero');
             const badges = Array.from(document.querySelectorAll('.hero-badge'));
