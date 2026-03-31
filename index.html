@@ -14,6 +14,717 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png"
         href="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        /* ── Remote Connect Modal ── */
+        .rc-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s var(--ease);
+        }
+
+        .rc-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .rc-modal {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-hover);
+            border-radius: 22px;
+            padding: 48px 44px 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.4s var(--ease);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rc-overlay.active .rc-modal {
+            transform: none;
+        }
+
+        .rc-modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-border), transparent);
+        }
+
+        .rc-modal h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .rc-modal p {
+            color: var(--muted);
+            font-size: 0.92rem;
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        .rc-input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-hover);
+            background: var(--bg);
+            color: var(--white);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 3px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .rc-input:focus {
+            border-color: var(--accent);
+        }
+
+        .rc-input::placeholder {
+            color: #3f3f46;
+            letter-spacing: 2px;
+        }
+
+        .rc-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: var(--white);
+            color: #000;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.3s var(--ease), box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(255, 255, 255, 0.15);
+        }
+
+        .rc-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .rc-status {
+            margin-top: 16px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            min-height: 20px;
+        }
+
+        .rc-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .rc-close:hover {
+            color: var(--white);
+        }
+
+        /* ── Command Center View (Dashboard) ── */
+        .dashboard-view {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .dashboard-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .landing-view.hidden {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Sidebar Header */
+        .cmd-sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #1a1a1a;
+            background: #000;
+        }
+
+        .cmd-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .cmd-brand img {
+            height: 24px;
+        }
+
+        .cmd-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .cmd-ping-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #51cf66;
+            box-shadow: 0 0 10px rgba(81, 207, 102, 0.5);
+            animation: blink 2.4s ease-in-out infinite;
+        }
+
+        .cmd-btn-danger {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cmd-btn-danger:hover {
+            background: rgba(255, 107, 107, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Main Workspace Desktop Layout */
+        .cmd-workspace {
+            display: flex;
+            flex: 1;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Video Stage (The Anchor) */
+        .cmd-stage {
+            flex: 1;
+            background: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1a1a1a;
+            z-index: 10;
+        }
+
+        .cmd-video-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .cmd-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .cmd-video-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: #555555;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .cmd-video-overlay i {
+            font-size: 3rem;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .cmd-video-overlay.hidden {
+            display: none;
+        }
+
+        .dash-fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            color: #c9d1d9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .dash-fullscreen-btn:hover {
+            background: #111111;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        /* Left/Right Control Sidebar */
+        .cmd-sidebar {
+            width: 320px;
+            background: #0a0a0a;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            border-left: 1px solid #1a1a1a;
+        }
+
+        .cmd-panel {
+            padding: 14px 18px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .cmd-panel-head {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Engine Status Panel */
+        .cmd-engine-status {
+            background: #000;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .engine-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+        }
+
+        .engine-dot.running {
+            background: #51cf66;
+            box-shadow: 0 0 10px rgba(81, 207, 102, 0.4);
+        }
+
+        .cmd-engine-status strong {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .cmd-ignition {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cmd-btn-start,
+        .cmd-btn-stop {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .cmd-btn-start {
+            background: rgba(81, 207, 102, 0.1);
+            border: 1px solid rgba(81, 207, 102, 0.3);
+            color: #51cf66;
+        }
+
+        .cmd-btn-start:hover {
+            background: rgba(81, 207, 102, 0.2);
+            box-shadow: 0 4px 16px rgba(81, 207, 102, 0.15);
+        }
+
+        .cmd-btn-stop {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .cmd-btn-stop:hover {
+            background: rgba(255, 107, 107, 0.2);
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.15);
+        }
+
+        /* Config Panel */
+        .cmd-config-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cmd-select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #1a1a1a;
+            background: #000;
+            color: #c9d1d9;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%238b949e'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            cursor: pointer;
+            transition: border 0.2s;
+        }
+
+        .cmd-select:focus {
+            border-color: #58a6ff;
+        }
+
+        .cmd-btn-primary {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cmd-btn-primary:hover:not(:disabled) {
+            background: rgba(88, 166, 255, 0.2);
+        }
+
+        .cmd-btn-primary:disabled {
+            opacity: 0.4;
+            background: #111111;
+            color: #555555;
+            border-color: #1a1a1a;
+            cursor: not-allowed;
+        }
+
+        .cmd-config-text {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(88, 166, 255, 0.05);
+            color: #8b949e;
+            border: 1px solid rgba(88, 166, 255, 0.1);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .cmd-config-text strong {
+            color: #58a6ff;
+            font-weight: bold;
+        }
+
+        /* Terminal Flex (Removed in favor of modal) */
+        .cmd-terminal {
+            background: #000;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #c9d1d9;
+        }
+
+        .cmd-stage:fullscreen {
+            border: none;
+        }
+
+        .cmd-stage:-webkit-full-screen {
+            border: none;
+        }
+
+        /* Logs (Matched to Desktop) */
+        .dash-log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(88, 166, 255, 0.08);
+        }
+
+        .dash-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .dash-log-ts {
+            color: #8b949e;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .dash-log-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+            min-width: 50px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .dash-log-type.info {
+            background-color: rgba(88, 166, 255, 0.2);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .dash-log-type.macro {
+            background-color: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid rgba(81, 207, 102, 0.3);
+        }
+
+        .dash-log-type.error {
+            background-color: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .dash-log-msg {
+            color: #c9d1d9;
+            word-break: break-word;
+        }
+
+        /* Command Center Mobile Resizing */
+        @media (max-width: 900px) {
+            .cmd-workspace {
+                flex-direction: column;
+            }
+
+            .cmd-stage {
+                order: -1;
+                flex: none;
+                height: 35vh;
+                border-right: none;
+                border-bottom: 1px solid #1a1a1a;
+                min-height: 250px;
+            }
+
+            .cmd-sidebar {
+                width: 100%;
+                flex: 1;
+                overflow-y: auto;
+                background: #0a0a0a;
+                border-left: none;
+            }
+
+            .cmd-ignition {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .dash-fullscreen-btn {
+                display: none;
+            }
+
+            /* Mobile Upscaling for Touch Targets */
+            .cmd-panel {
+                padding: 20px 24px;
+                border-bottom: 1px solid #111;
+            }
+
+            .cmd-panel-head {
+                font-size: 0.8rem;
+                margin-bottom: 16px;
+            }
+
+            .cmd-btn-start,
+            .cmd-btn-stop {
+                padding: 18px;
+                font-size: 1.05rem;
+            }
+
+            .cmd-select {
+                padding: 16px;
+                font-size: 1rem;
+            }
+
+            .cmd-btn-primary {
+                padding: 16px;
+                font-size: 1.05rem;
+            }
+
+            .cmd-config-text {
+                font-size: 0.85rem;
+                padding: 12px 16px;
+            }
+
+            .cmd-engine-status {
+                padding: 16px;
+            }
+
+            #dash-disconnect-panel {
+                margin-top: auto;
+                padding: 16px !important;
+                border-top: 1px solid #1a1a1a;
+            }
+
+            #dash-disconnect {
+                padding: 16px !important;
+                font-size: 1.05rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dash-config-select {
+                width: 100%;
+                padding: 14px 16px;
+                font-size: 1rem;
+            }
+
+            .dash-config-load {
+                width: 100%;
+                padding: 14px;
+                font-size: 0.92rem;
+                text-align: center;
+            }
+
+            .dash-video-wrap {
+                border-radius: 10px;
+            }
+
+            .dash-fullscreen-btn {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .dash-logs {
+                max-height: 180px;
+                font-size: 0.62rem;
+            }
+
+            .rc-modal {
+                padding: 32px 24px 28px;
+                border-radius: 16px;
+            }
+
+            .rc-input {
+                font-size: 1.1rem;
+                padding: 14px 16px;
+            }
+
+            .rc-btn {
+                padding: 15px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dash-container {
+                padding: 72px 12px 24px;
+            }
+
+            .dash-title {
+                font-size: 1.05rem;
+            }
+
+            .dash-card {
+                padding: 14px;
+            }
+
+            .dash-card-header h3 {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -23,15 +734,19 @@
 
     <nav class="nav" id="nav">
         <div class="nav-inner">
-            <a href="#" class="nav-logo">
+            <a href="#" class="nav-logo" id="nav-logo-link">
                 <div class="logo-mark"><img
                         src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
                         alt="Wavebound"></div>
                 Wavebound
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="nav-links-main">
                 <a href="#features">Features</a>
                 <a href="#download">Download</a>
+                <a href="#" id="remote-connect-link" style="color: var(--accent);">
+                    <i class="fas fa-wifi" style="margin-right: 4px;"></i>
+                    Remote
+                </a>
             </div>
             <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="nav-gh">
                 <i class="fab fa-github"></i>
@@ -40,236 +755,332 @@
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="hero-grid-bg"></div>
-        <div class="hero-orb"></div>
-
-        <!-- Corner bracket accents -->
-        <div class="hero-corners">
-            <span class="corner corner-tl"></span>
-            <span class="corner corner-tr"></span>
-            <span class="corner corner-bl"></span>
-            <span class="corner corner-br"></span>
-        </div>
-
-        <!-- Floating ambient badges -->
-        <div class="hero-badge hero-badge-1">
-            <i class="fas fa-circle"></i>
-            Sub-10ms Timing
-        </div>
-        <div class="hero-badge hero-badge-2">
-            <i class="fas fa-circle"></i>
-            HSV color detection
-        </div>
-        <div class="hero-badge hero-badge-3">
-            <i class="fas fa-circle"></i>
-            pixel-perfect clicks
-        </div>
-        <div class="hero-badge hero-badge-4">
-            <i class="fas fa-circle"></i>
-            OCR screen reading
-        </div>
-        <div class="hero-badge hero-badge-5">
-            <i class="fas fa-circle"></i>
-            anti-AFK built in
-        </div>
-        <div class="hero-badge hero-badge-6">
-            <i class="fas fa-circle"></i>
-            multi-monitor support
-        </div>
-        <div class="hero-badge hero-badge-7">
-            <i class="fas fa-circle"></i>
-            discord webhooks
-        </div>
-        <div class="hero-badge hero-badge-8">
-            <i class="fas fa-circle"></i>
-            image detection
-        </div>
-
-        <div class="hero-content">
-            <div class="hero-pill">
-                <span class="pill-dot"></span>
-                v1.1.8 out now
-            </div>
-            <h1 class="hero-h1">
-                <div class="line-wrap"><span>Game automation,</span></div>
-                <div class="line-wrap"><span class="h1-accent"><em>done right.</em></span></div>
-            </h1>
-            <p class="hero-sub">
-                Record once, run forever. Wavebound handles the clicks,
-                timing, and logic so you can focus on actually playing.
-            </p>
-            <div class="hero-btns">
-                <a href="#download" class="btn-solid">
-                    Download free
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-                <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="btn-ghost">
-                    <i class="fab fa-github"></i>
-                    View on GitHub
-                </a>
-            </div>
-        </div>
-        <div class="scroll-cue">
-            <span class="scroll-label">scroll</span>
-            <div class="scroll-track">
-                <div class="scroll-pip"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Marquee ticker strip -->
-    <div class="marquee-strip">
-        <div class="marquee-track">
-            <!-- First copy -->
-            <span class="marquee-item"><i class="fas fa-eye"></i> OCR Screen Reading</span>
-            <span class="marquee-item"><i class="fas fa-bolt"></i> Sub-10ms Timing</span>
-            <span class="marquee-item"><i class="fas fa-palette"></i> HSV Color Detection</span>
-            <span class="marquee-item"><i class="fas fa-sliders-h"></i> Fully Customizable</span>
-            <span class="marquee-item"><i class="fas fa-bell"></i> Discord Webhooks</span>
-            <span class="marquee-item"><i class="fas fa-keyboard"></i> Hotkey Bindings</span>
-            <span class="marquee-item"><i class="fas fa-search"></i> Image Detection</span>
-            <span class="marquee-item"><i class="fas fa-infinity"></i> Unlimited Loops</span>
-            <span class="marquee-item"><i class="fas fa-shield-alt"></i> Anti-AFK System</span>
-            <span class="marquee-item"><i class="fas fa-mouse-pointer"></i> Smart Click Timing</span>
-            <span class="marquee-item"><i class="fas fa-copy"></i> Copy &amp; Paste Actions</span>
-            <span class="marquee-item"><i class="fas fa-desktop"></i> Multi-Monitor</span>
-            <span class="marquee-item"><i class="fas fa-save"></i> Config Profiles</span>
-            <span class="marquee-item"><i class="fab fa-windows"></i> Windows 10 / 11</span>
-            <!-- Second copy for seamless loop -->
-            <span class="marquee-item"><i class="fas fa-eye"></i> OCR Screen Reading</span>
-            <span class="marquee-item"><i class="fas fa-bolt"></i> Sub-10ms Timing</span>
-            <span class="marquee-item"><i class="fas fa-palette"></i> HSV Color Detection</span>
-            <span class="marquee-item"><i class="fas fa-sliders-h"></i> Fully Customizable</span>
-            <span class="marquee-item"><i class="fas fa-bell"></i> Discord Webhooks</span>
-            <span class="marquee-item"><i class="fas fa-keyboard"></i> Hotkey Bindings</span>
-            <span class="marquee-item"><i class="fas fa-search"></i> Image Detection</span>
-            <span class="marquee-item"><i class="fas fa-infinity"></i> Unlimited Loops</span>
-            <span class="marquee-item"><i class="fas fa-shield-alt"></i> Anti-AFK System</span>
-            <span class="marquee-item"><i class="fas fa-mouse-pointer"></i> Smart Click Timing</span>
-            <span class="marquee-item"><i class="fas fa-copy"></i> Copy &amp; Paste Actions</span>
-            <span class="marquee-item"><i class="fas fa-desktop"></i> Multi-Monitor</span>
-            <span class="marquee-item"><i class="fas fa-save"></i> Config Profiles</span>
-            <span class="marquee-item"><i class="fab fa-windows"></i> Windows 10 / 11</span>
+    <!-- Connect Modal Overlay -->
+    <div class="rc-overlay" id="rc-overlay">
+        <div class="rc-modal">
+            <button class="rc-close" id="rc-close">&times;</button>
+            <h2>Remote Connect</h2>
+            <p>Enter the pairing code shown in your Wavebound desktop app to connect.</p>
+            <input type="text" class="rc-input" id="rc-code-input" placeholder="wb-xxxxxx" autocomplete="off"
+                autocorrect="off" maxlength="9" spellcheck="false">
+            <button class="rc-btn" id="rc-connect-btn">Connect</button>
+            <div class="rc-status" id="rc-status"></div>
         </div>
     </div>
 
-    <section id="features" class="section-features">
-        <div class="wrap">
-            <div class="s-eyebrow" data-reveal>Features</div>
-            <h2 class="s-h2" data-reveal data-delay="0.06">What's inside</h2>
-            <div class="feat-grid">
-                <div class="feat-card" data-reveal data-delay="0.0">
-                    <span class="feat-num">01</span>
-                    <div class="feat-ico"><i class="fas fa-eye"></i></div>
-                    <h3>Screen Reading</h3>
-                    <p>Reads text directly off the screen so macros can react to what's actually happening in-game. No
-                        polling, no guessing.</p>
+    <!-- Landing View (your existing site) -->
+    <div class="landing-view" id="landing-view">
+        <section class="hero">
+            <div class="hero-grid-bg"></div>
+            <div class="hero-orb"></div>
+            <div class="hero-corners">
+                <span class="corner corner-tl"></span>
+                <span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span>
+                <span class="corner corner-br"></span>
+            </div>
+            <div class="hero-badge hero-badge-1"><i class="fas fa-circle"></i> Sub-10ms Timing</div>
+            <div class="hero-badge hero-badge-2"><i class="fas fa-circle"></i> HSV color detection</div>
+            <div class="hero-badge hero-badge-3"><i class="fas fa-circle"></i> pixel-perfect clicks</div>
+            <div class="hero-badge hero-badge-4"><i class="fas fa-circle"></i> OCR screen reading</div>
+            <div class="hero-badge hero-badge-5"><i class="fas fa-circle"></i> anti-AFK built in</div>
+            <div class="hero-badge hero-badge-6"><i class="fas fa-circle"></i> multi-monitor support</div>
+            <div class="hero-badge hero-badge-7"><i class="fas fa-circle"></i> discord webhooks</div>
+            <div class="hero-badge hero-badge-8"><i class="fas fa-circle"></i> image detection</div>
+
+            <div class="hero-content">
+                <div class="hero-pill">
+                    <span class="pill-dot"></span>
+                    v1.1.9 out now
                 </div>
-                <div class="feat-card" data-reveal data-delay="0.09">
-                    <span class="feat-num">02</span>
-                    <div class="feat-ico"><i class="fas fa-bolt"></i></div>
-                    <h3>Tight Timing</h3>
-                    <p>Clicks land exactly where and when you set them. No OS jitter, no frame delays. Just precise,
-                        repeatable input.</p>
-                </div>
-                <div class="feat-card" data-reveal data-delay="0.18">
-                    <span class="feat-num">03</span>
-                    <div class="feat-ico"><i class="fas fa-code-branch"></i></div>
-                    <h3>Real Scripting</h3>
-                    <p>Loops, conditionals, hotkeys. Build sequences that actually think instead of blindly repeating
-                        the same steps.</p>
-                </div>
-                <div class="feat-card" data-reveal data-delay="0.27">
-                    <span class="feat-num">04</span>
-                    <div class="feat-ico"><i class="fas fa-sliders-h"></i></div>
-                    <h3>Fully Configurable</h3>
-                    <p>Tune color filters, set up Discord webhook alerts, configure everything to fit your exact setup.
-                    </p>
+                <h1 class="hero-h1">
+                    <div class="line-wrap"><span>Game automation,</span></div>
+                    <div class="line-wrap"><span class="h1-accent"><em>done right.</em></span></div>
+                </h1>
+                <p class="hero-sub">
+                    Record once, run forever. Wavebound handles the clicks,
+                    timing, and logic so you can focus on actually playing.
+                </p>
+                <div class="hero-btns">
+                    <a href="#download" class="btn-solid">
+                        Download free
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="btn-ghost">
+                        <i class="fab fa-github"></i>
+                        View on GitHub
+                    </a>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section id="download" class="section-download">
-        <div class="wrap">
-            <div class="s-eyebrow" data-reveal>Download</div>
-            <h2 class="s-h2" data-reveal data-delay="0.06">Get the app</h2>
-            <p class="s-sub" data-reveal data-delay="0.12">Two versions. Pick what fits.</p>
-            <div class="dl-grid">
-                <div class="dl-card" data-reveal data-delay="0.06">
-                    <div class="dl-body">
-                        <h3>Wavebound MiniMacro</h3>
-                        <p>Portable record & playback. No install, no setup. Just run it.</p>
-                        <ul class="dl-list">
-                            <li><i class="fas fa-check"></i>Record & playback</li>
-                            <li><i class="fas fa-check"></i>Zero-install portable</li>
-                            <li><i class="fas fa-check"></i>Discord webhook alerts</li>
-                            <li><i class="fas fa-check"></i>Minimal resource usage</li>
-                        </ul>
-                    </div>
-                    <div class="dl-foot">
-                        <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe"
-                            class="dl-btn-ghost" download>
-                            <i class="fas fa-download"></i> Download Portable
-                        </a>
-                        <span class="dl-meta">~700 KB · Windows 10/11</span>
-                    </div>
+            <div class="scroll-cue">
+                <span class="scroll-label">scroll</span>
+                <div class="scroll-track">
+                    <div class="scroll-pip"></div>
                 </div>
+            </div>
+        </section>
 
-                <div class="dl-card dl-card-pro" data-reveal data-delay="0.18">
-                    <div class="pro-tag">Full Release</div>
-                    <div class="dl-body">
-                        <h3>Wavebound</h3>
-                        <p>The full package. OCR, scripting, and color detection for when you need real power.</p>
-                        <ul class="dl-list">
-                            <li><i class="fas fa-check"></i>OCR & screen reading</li>
-                            <li><i class="fas fa-check"></i>Advanced Customization</li>
-                            <li><i class="fas fa-check"></i>Loops & conditionals</li>
-                            <li><i class="fas fa-check"></i>HSV color filtering</li>
-                        </ul>
+        <div class="marquee-strip">
+            <div class="marquee-track">
+                <span class="marquee-item"><i class="fas fa-eye"></i> OCR Screen Reading</span>
+                <span class="marquee-item"><i class="fas fa-bolt"></i> Sub-10ms Timing</span>
+                <span class="marquee-item"><i class="fas fa-palette"></i> HSV Color Detection</span>
+                <span class="marquee-item"><i class="fas fa-sliders-h"></i> Fully Customizable</span>
+                <span class="marquee-item"><i class="fas fa-bell"></i> Discord Webhooks</span>
+                <span class="marquee-item"><i class="fas fa-keyboard"></i> Hotkey Bindings</span>
+                <span class="marquee-item"><i class="fas fa-search"></i> Image Detection</span>
+                <span class="marquee-item"><i class="fas fa-infinity"></i> Unlimited Loops</span>
+                <span class="marquee-item"><i class="fas fa-shield-alt"></i> Anti-AFK System</span>
+                <span class="marquee-item"><i class="fas fa-mouse-pointer"></i> Smart Click Timing</span>
+                <span class="marquee-item"><i class="fas fa-copy"></i> Copy &amp; Paste Actions</span>
+                <span class="marquee-item"><i class="fas fa-desktop"></i> Multi-Monitor</span>
+                <span class="marquee-item"><i class="fas fa-save"></i> Config Profiles</span>
+                <span class="marquee-item"><i class="fab fa-windows"></i> Windows 10 / 11</span>
+                <span class="marquee-item"><i class="fas fa-eye"></i> OCR Screen Reading</span>
+                <span class="marquee-item"><i class="fas fa-bolt"></i> Sub-10ms Timing</span>
+                <span class="marquee-item"><i class="fas fa-palette"></i> HSV Color Detection</span>
+                <span class="marquee-item"><i class="fas fa-sliders-h"></i> Fully Customizable</span>
+                <span class="marquee-item"><i class="fas fa-bell"></i> Discord Webhooks</span>
+                <span class="marquee-item"><i class="fas fa-keyboard"></i> Hotkey Bindings</span>
+                <span class="marquee-item"><i class="fas fa-search"></i> Image Detection</span>
+                <span class="marquee-item"><i class="fas fa-infinity"></i> Unlimited Loops</span>
+                <span class="marquee-item"><i class="fas fa-shield-alt"></i> Anti-AFK System</span>
+                <span class="marquee-item"><i class="fas fa-mouse-pointer"></i> Smart Click Timing</span>
+                <span class="marquee-item"><i class="fas fa-copy"></i> Copy &amp; Paste Actions</span>
+                <span class="marquee-item"><i class="fas fa-desktop"></i> Multi-Monitor</span>
+                <span class="marquee-item"><i class="fas fa-save"></i> Config Profiles</span>
+                <span class="marquee-item"><i class="fab fa-windows"></i> Windows 10 / 11</span>
+            </div>
+        </div>
+
+        <section id="features" class="section-features">
+            <div class="wrap">
+                <div class="s-eyebrow" data-reveal>Features</div>
+                <h2 class="s-h2" data-reveal data-delay="0.06">What's inside</h2>
+                <div class="feat-grid">
+                    <div class="feat-card" data-reveal data-delay="0.0">
+                        <span class="feat-num">01</span>
+                        <div class="feat-ico"><i class="fas fa-eye"></i></div>
+                        <h3>Screen Reading</h3>
+                        <p>Reads text directly off the screen so macros can react to what's actually happening in-game.
+                        </p>
                     </div>
-                    <div class="dl-foot">
-                        <a href="https://github.com/WaveBound/WaveBound/releases/download/installer/WaveboundInstaller.exe"
-                            class="dl-btn-solid" download>
-                            <i class="fas fa-download"></i> Download Installer
-                        </a>
-                        <span class="dl-meta">~45 MB · Windows 10/11</span>
+                    <div class="feat-card" data-reveal data-delay="0.09">
+                        <span class="feat-num">02</span>
+                        <div class="feat-ico"><i class="fas fa-bolt"></i></div>
+                        <h3>Tight Timing</h3>
+                        <p>Clicks land exactly where and when you set them. No OS jitter, no frame delays.</p>
+                    </div>
+                    <div class="feat-card" data-reveal data-delay="0.18">
+                        <span class="feat-num">03</span>
+                        <div class="feat-ico"><i class="fas fa-code-branch"></i></div>
+                        <h3>Real Scripting</h3>
+                        <p>Loops, conditionals, hotkeys. Build sequences that actually think.</p>
+                    </div>
+                    <div class="feat-card" data-reveal data-delay="0.27">
+                        <span class="feat-num">04</span>
+                        <div class="feat-ico"><i class="fas fa-sliders-h"></i></div>
+                        <h3>Fully Configurable</h3>
+                        <p>Tune color filters, set up Discord webhook alerts, configure everything to fit your setup.
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer class="footer">
-        <div class="wrap footer-row">
-            <div class="footer-left">
-                <a href="#" class="nav-logo">
-                    <div class="logo-mark"><img
-                            src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
-                            alt="Wavebound"></div>
-                    Wavebound
-                </a>
-                <p class="footer-line">Built to automate the grind.</p>
+        <section id="download" class="section-download">
+            <div class="wrap">
+                <div class="s-eyebrow" data-reveal>Download</div>
+                <h2 class="s-h2" data-reveal data-delay="0.06">Get the app</h2>
+                <p class="s-sub" data-reveal data-delay="0.12">Two versions. Pick what fits.</p>
+                <div class="dl-grid">
+                    <div class="dl-card" data-reveal data-delay="0.06">
+                        <div class="dl-body">
+                            <h3>Wavebound MiniMacro</h3>
+                            <p>Portable record & playback. No install, no setup. Just run it.</p>
+                            <ul class="dl-list">
+                                <li><i class="fas fa-check"></i>Record & playback</li>
+                                <li><i class="fas fa-check"></i>Zero-install portable</li>
+                                <li><i class="fas fa-check"></i>Discord webhook alerts</li>
+                                <li><i class="fas fa-check"></i>Minimal resource usage</li>
+                            </ul>
+                        </div>
+                        <div class="dl-foot">
+                            <a href="https://github.com/WaveBound/WaveBound/releases/download/MiniMacro/WaveBound.MiniMacro.exe"
+                                class="dl-btn-ghost" download>
+                                <i class="fas fa-download"></i> Download Portable
+                            </a>
+                            <span class="dl-meta">~700 KB · Windows 10/11</span>
+                        </div>
+                    </div>
+                    <div class="dl-card dl-card-pro" data-reveal data-delay="0.18">
+                        <div class="pro-tag">Full Release</div>
+                        <div class="dl-body">
+                            <h3>Wavebound</h3>
+                            <p>The full package. OCR, scripting, and color detection for when you need real power.</p>
+                            <ul class="dl-list">
+                                <li><i class="fas fa-check"></i>OCR & screen reading</li>
+                                <li><i class="fas fa-check"></i>Advanced Customization</li>
+                                <li><i class="fas fa-check"></i>Loops & conditionals</li>
+                                <li><i class="fas fa-check"></i>HSV color filtering</li>
+                            </ul>
+                        </div>
+                        <div class="dl-foot">
+                            <a href="https://github.com/WaveBound/WaveBound/releases/download/v1.0.9/WaveboundInstaller.exe"
+                                class="dl-btn-solid" download>
+                                <i class="fas fa-download"></i> Download Installer
+                            </a>
+                            <span class="dl-meta">~45 MB · Windows 10/11</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <nav class="footer-nav">
-                <a href="#features">Features</a>
-                <a href="https://github.com/WaveBound/WaveBound" target="_blank">GitHub</a>
-                <a href="https://github.com/WaveBound/WaveBound/releases" target="_blank">Releases</a>
-            </nav>
+        </section>
+
+        <footer class="footer">
+            <div class="wrap footer-row">
+                <div class="footer-left">
+                    <a href="#" class="nav-logo">
+                        <div class="logo-mark"><img
+                                src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
+                                alt="Wavebound"></div>
+                        Wavebound
+                    </a>
+                    <p class="footer-line">Built to automate the grind.</p>
+                </div>
+                <nav class="footer-nav">
+                    <a href="#features">Features</a>
+                    <a href="https://github.com/WaveBound/WaveBound" target="_blank">GitHub</a>
+                    <a href="https://github.com/WaveBound/WaveBound/releases" target="_blank">Releases</a>
+                </nav>
+            </div>
+            <div class="footer-base">
+                <p>&copy; 2025 Wavebound. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Command Center View (shown after connect) -->
+    <div class="dashboard-view" id="dashboard-view">
+
+        <!-- Main Workspace -->
+        <div class="cmd-workspace">
+
+            <!-- Left Sidebar (Controls & Configs) -->
+            <aside class="cmd-sidebar">
+
+                <!-- Compact Status Header -->
+                <div class="cmd-sidebar-header">
+                    <div class="cmd-brand">
+                        <img src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
+                            alt="Wavebound">
+                        WaveBound
+                    </div>
+                    <div class="cmd-status">
+                        <span class="cmd-ping-dot"></span>
+                        <span>Connected</span>
+                    </div>
+                </div>
+
+                <!-- Macro Controls Panel -->
+                <div class="cmd-panel">
+                    <div class="cmd-panel-head">
+                        <i class="fas fa-gamepad"></i> Macro Controls
+                    </div>
+
+                    <div class="cmd-engine-status" id="dash-status-box">
+                        <span id="dash-status-dot" class="engine-dot stopped"></span>
+                        <strong id="dash-status-text">Stopped</strong>
+                    </div>
+
+                    <div class="cmd-ignition">
+                        <button class="cmd-btn-start" id="dash-start">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="cmd-btn-stop" id="dash-stop">
+                            <i class="fas fa-stop"></i> Stop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Config Control Panel -->
+                <div class="cmd-panel" id="dash-config-card">
+                    <div class="cmd-panel-head">
+                        <i class="fas fa-folder-open"></i> Config Files
+                    </div>
+                    <div class="cmd-config-box">
+                        <select class="cmd-select" id="dash-config-select">
+                            <option value="">No configs available</option>
+                        </select>
+                        <button class="cmd-btn-primary" id="dash-config-load" disabled>Load Profile</button>
+                    </div>
+                    <div class="cmd-config-text" id="dash-config-current">No config loaded.</div>
+                </div>
+
+                <!-- Terminal View Action -->
+                <div class="cmd-panel" style="padding: 14px 18px; border-bottom: none;">
+                    <button class="cmd-btn-primary" id="open-logs-btn"
+                        style="background: rgba(255,255,255,0.05); color: #fff; border-color: rgba(255,255,255,0.1); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <i class="fas fa-terminal"></i> View Live Logs
+                    </button>
+                </div>
+
+                <!-- Bottom Disconnect Action -->
+                <div class="cmd-panel" id="dash-disconnect-panel"
+                    style="padding: 10px; border-bottom: none; border-top: 1px solid #1a1a1a; background: #000;">
+                    <button class="cmd-btn-danger" id="dash-disconnect"
+                        style="width: 100%; display: flex; justify-content: center; padding: 10px;">
+                        <i class="fas fa-plug" style="margin-right: 6px;"></i> Disconnect Session
+                    </button>
+                </div>
+
+            </aside>
+
+            <!-- Center Stage (Video Anchor) -->
+            <main class="cmd-stage">
+                <div class="cmd-video-container" id="dash-video-wrap">
+                    <video id="dash-video" autoplay playsinline muted></video>
+
+                    <div class="cmd-video-overlay" id="dash-video-placeholder">
+                        <i class="fas fa-video-slash"></i>
+                        <span style="font-size: 1.1rem; color: #8b949e;">Waiting for screen feed...</span>
+                        <small style="color: #555;">Video streaming must be enabled in the desktop app.</small>
+                    </div>
+
+                    <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </main>
+
         </div>
-        <div class="footer-base">
-            <p>© 2025 Wavebound. All rights reserved.</p>
+    </div>
+
+    <!-- Live Logs Modal -->
+    <div class="rc-overlay hidden" id="logs-modal-overlay" style="z-index: 9999;">
+        <div class="rc-modal"
+            style="width: 90%; max-width: 600px; display: flex; flex-direction: column; max-height: 80vh; padding: 0; background: #0a0a0a;">
+            <div
+                style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h2
+                    style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
+                    <i class="fas fa-terminal" style="color: #8b949e;"></i> Live Terminal Feed</h2>
+                <button class="rc-close" id="close-logs-btn" style="position: static;"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div id="dash-logs" class="cmd-terminal"
+                style="border: none; border-radius: 0 0 16px 16px; min-height: 40vh; max-height: 60vh; padding: 16px;">
+            </div>
         </div>
-    </footer>
+    </div>
 
     <script>
+        // ── Landing page scripts ──
         const nav = document.getElementById('nav');
         const progressBar = document.getElementById('progressBar');
         const scrollTrack = document.querySelector('.scroll-track');
         const scrollPip = document.querySelector('.scroll-pip');
 
-        // Progress bar + scroll-cue
         window.addEventListener('scroll', () => {
             const docH = document.documentElement.scrollHeight - window.innerHeight;
             const prog = docH > 0 ? Math.min(window.scrollY / docH, 1) : 0;
@@ -284,7 +1095,6 @@
             if (scrollTrack) scrollTrack.style.opacity = prog > 0.92 ? '0' : '1';
         }, { passive: true });
 
-        // Feature card mouse-tracking glow
         document.querySelectorAll('.feat-card').forEach(card => {
             card.addEventListener('mousemove', e => {
                 const r = card.getBoundingClientRect();
@@ -293,7 +1103,6 @@
             });
         });
 
-        // Reveal on scroll
         const ro = new IntersectionObserver(entries => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
@@ -305,113 +1114,358 @@
         }, { threshold: 0.1 });
         document.querySelectorAll('[data-reveal]').forEach(el => ro.observe(el));
 
-        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(a => {
             a.addEventListener('click', e => {
+                if (a.id === 'remote-connect-link') return; // handled separately
                 const t = document.querySelector(a.getAttribute('href'));
                 if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
             });
         });
 
-        // Random badge spawner within corner brackets
         function initBadges() {
             const hero = document.querySelector('.hero');
             const badges = Array.from(document.querySelectorAll('.hero-badge'));
             if (!hero || badges.length === 0) return;
-
-            // Fixed estimated badge size — all badges share the same CSS so this is reliable
-            const BW = 185; // badge width estimate (px)
-            const BH = 34;  // badge height estimate (px)
-
-            // Active rects: top-left origin { x, y }
+            const BW = 185, BH = 34;
             const activeRects = new Map();
-
             function overlapsAny(x, y, skip) {
                 const pad = 20;
                 for (const [other, r] of activeRects) {
                     if (other === skip) continue;
-                    if (x < r.x + BW + pad && x + BW + pad > r.x &&
-                        y < r.y + BH + pad && y + BH + pad > r.y) return true;
+                    if (x < r.x + BW + pad && x + BW + pad > r.x && y < r.y + BH + pad && y + BH + pad > r.y) return true;
                 }
                 return false;
             }
-
             function pickPosition(badge) {
-                const hw = hero.offsetWidth;
-                const hh = hero.offsetHeight;
-
-                const brkX1 = hw * 0.06;
-                const brkX2 = hw * 0.94 - BW;
-                const brkY1 = hh * 0.14;
-                const brkY2 = hh * 0.86 - BH;
-
-                const czX1 = hw * 0.20;
-                const czX2 = hw * 0.80;
-                const czY1 = hh * 0.22;
-                const czY2 = hh * 0.82;
-
+                const hw = hero.offsetWidth, hh = hero.offsetHeight;
                 const zones = [
-                    { x1: brkX1, x2: czX1 - BW, y1: brkY1, y2: brkY2 }, // left
-                    { x1: czX2, x2: brkX2, y1: brkY1, y2: brkY2 }, // right
-                    { x1: czX1, x2: czX2 - BW, y1: brkY1, y2: czY1 - BH }, // top
+                    { x1: hw * 0.06, x2: hw * 0.20 - BW, y1: hh * 0.14, y2: hh * 0.86 - BH },
+                    { x1: hw * 0.80, x2: hw * 0.94 - BW, y1: hh * 0.14, y2: hh * 0.86 - BH },
+                    { x1: hw * 0.20, x2: hw * 0.80 - BW, y1: hh * 0.14, y2: hh * 0.22 - BH },
                 ].filter(z => z.x2 > z.x1 && z.y2 > z.y1);
-
-                if (zones.length === 0) return null;
-
-                let fallback = null;
+                if (!zones.length) return null;
+                let fb = null;
                 for (let i = 0; i < 60; i++) {
                     const z = zones[Math.floor(Math.random() * zones.length)];
                     const x = z.x1 + Math.random() * (z.x2 - z.x1);
                     const y = z.y1 + Math.random() * (z.y2 - z.y1);
                     if (!overlapsAny(x, y, badge)) return { x, y };
-                    if (!fallback) fallback = { x, y };
+                    if (!fb) fb = { x, y };
                 }
-                return fallback;
+                return fb;
             }
-
             function show(badge) {
                 const pos = pickPosition(badge);
                 if (!pos) { setTimeout(() => show(badge), 1500); return; }
-
-                badge.style.left = pos.x + 'px';
-                badge.style.top = pos.y + 'px';
+                badge.style.left = pos.x + 'px'; badge.style.top = pos.y + 'px';
                 activeRects.set(badge, { x: pos.x, y: pos.y });
-
-                badge.classList.remove('badge-visible', 'badge-hidden');
-                badge.style.transition = 'none';
-                badge.style.opacity = '0';
-                badge.style.transform = 'scale(0.92)';
-
+                badge.style.transition = 'none'; badge.style.opacity = '0'; badge.style.transform = 'scale(0.92)';
                 requestAnimationFrame(() => requestAnimationFrame(() => {
                     badge.style.transition = 'opacity 1.2s ease, transform 1.2s cubic-bezier(0.16,1,0.3,1)';
-                    badge.style.opacity = '1';
-                    badge.style.transform = 'scale(1)';
-
-                    const holdMs = 4500 + Math.random() * 4500;
-                    setTimeout(() => hide(badge), holdMs);
+                    badge.style.opacity = '1'; badge.style.transform = 'scale(1)';
+                    setTimeout(() => hide(badge), 4500 + Math.random() * 4500);
                 }));
             }
-
             function hide(badge) {
                 badge.style.transition = 'opacity 1.2s ease, transform 1.2s cubic-bezier(0.16,1,0.3,1)';
-                badge.style.opacity = '0';
-                badge.style.transform = 'scale(0.94)';
+                badge.style.opacity = '0'; badge.style.transform = 'scale(0.94)';
                 activeRects.delete(badge);
-
-                const gapMs = 2500 + Math.random() * 4000;
-                setTimeout(() => show(badge), gapMs);
+                setTimeout(() => show(badge), 2500 + Math.random() * 4000);
             }
+            badges.forEach(b => {
+                b.style.opacity = '0'; b.style.transform = 'scale(0.92)'; b.style.left = '-9999px';
+                setTimeout(() => show(b), 500 + Math.random() * 7000);
+            });
+        }
+        window.addEventListener('load', initBadges);
 
-            // Fully random initial delays so nothing appears in sequence
-            badges.forEach(badge => {
-                badge.style.opacity = '0';
-                badge.style.transform = 'scale(0.92)';
-                badge.style.left = '-9999px';
-                setTimeout(() => show(badge), 500 + Math.random() * 7000);
+        // ── Remote Control Logic ──
+        let peer = null;
+        let connection = null;
+
+        const overlay = document.getElementById('rc-overlay');
+        const codeInput = document.getElementById('rc-code-input');
+        const connectBtn = document.getElementById('rc-connect-btn');
+        const statusEl = document.getElementById('rc-status');
+        const closeBtn = document.getElementById('rc-close');
+        const landingView = document.getElementById('landing-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const navLinksMain = document.getElementById('nav-links-main');
+
+        const dashStatusDot = document.getElementById('dash-status-dot');
+        const dashStatusText = document.getElementById('dash-status-text');
+        const dashStartBtn = document.getElementById('dash-start');
+        const dashStopBtn = document.getElementById('dash-stop');
+        const dashLogs = document.getElementById('dash-logs');
+        const dashVideo = document.getElementById('dash-video');
+        const dashVideoPlaceholder = document.getElementById('dash-video-placeholder');
+        const dashDisconnect = document.getElementById('dash-disconnect');
+        const dashConfigSelect = document.getElementById('dash-config-select');
+        const dashConfigLoad = document.getElementById('dash-config-load');
+        const dashConfigCurrent = document.getElementById('dash-config-current');
+        const dashConfigFeedback = document.getElementById('dash-config-feedback');
+        const dashConfigCard = document.getElementById('dash-config-card');
+
+        const savedCode = localStorage.getItem('wb-remote-code');
+        if (savedCode) codeInput.value = savedCode;
+
+        // Open / close modal
+        document.getElementById('remote-connect-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            overlay.classList.add('active');
+            codeInput.focus();
+        });
+        closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+        // Connect
+        connectBtn.addEventListener('click', doConnect);
+        codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
+
+        function doConnect() {
+            let code = codeInput.value.trim().toLowerCase();
+            if (!code) return;
+            if (!code.startsWith('wb-')) code = 'wb-' + code;
+
+            connectBtn.disabled = true;
+            statusEl.textContent = 'Connecting to signaling server...';
+            statusEl.style.color = 'var(--accent)';
+
+            peer = new Peer({ debug: 1 });
+
+            peer.on('open', () => {
+                statusEl.textContent = 'Connecting to PC...';
+                connection = peer.connect(code, { reliable: true });
+
+                connection.on('open', () => {
+                    localStorage.setItem('wb-remote-code', code);
+                    overlay.classList.remove('active');
+                    connectBtn.disabled = false;
+                    statusEl.textContent = '';
+
+                    // Switch views
+                    landingView.classList.add('hidden');
+                    dashboardView.classList.add('active');
+                    navLinksMain.style.display = 'none';
+                    window.scrollTo(0, 0);
+
+                    connection.send({ type: 'GET_STATE' });
+                });
+
+                connection.on('data', handleData);
+                connection.on('close', handleDisconnect);
+                connection.on('error', () => {
+                    statusEl.textContent = 'Connection failed. Check the code.';
+                    statusEl.style.color = '#ff6b6b';
+                    connectBtn.disabled = false;
+                });
+            });
+
+            peer.on('call', (call) => {
+                call.answer(); // We don't send any stream back
+                call.on('stream', (remoteStream) => {
+                    dashVideo.srcObject = remoteStream;
+                    dashVideoPlaceholder.classList.add('hidden');
+                });
+                call.on('close', () => {
+                    dashVideo.srcObject = null;
+                    dashVideoPlaceholder.classList.remove('hidden');
+                });
+            });
+
+            peer.on('error', (err) => {
+                statusEl.textContent = 'Error: ' + err.message;
+                statusEl.style.color = '#ff6b6b';
+                connectBtn.disabled = false;
             });
         }
 
-        window.addEventListener('load', initBadges);
+        function handleData(data) {
+            if (!data) return;
+            if (data.type === 'STATUS_SYNC' || data.type === 'STATE_SYNC') {
+                updateMacroState(data.status);
+                if (data.type === 'STATE_SYNC') {
+                    if (data.logs) { dashLogs.innerHTML = ''; data.logs.forEach(addLog); }
+                    if (data.configs) populateConfigs(data.configs, data.currentConfig);
+                    if (data.permissions) applyPermissions(data.permissions);
+                }
+            } else if (data.type === 'PERMISSIONS_UPDATE') {
+                applyPermissions(data.permissions);
+            } else if (data.type === 'CONFIG_LIST') {
+                populateConfigs(data.configs, data.currentConfig);
+            } else if (data.type === 'CONFIG_LOADED') {
+                dashConfigCurrent.innerHTML = '<span style="color: #51cf66;">Loaded: <strong>' + data.configName + '</strong></span>';
+                setTimeout(() => {
+                    dashConfigCurrent.innerHTML = 'Active: <strong>' + data.configName + '</strong>';
+                }, 1500);
+            } else if (data.type === 'NEW_LOG') {
+                addLog(data.log);
+            } else if (data.type === 'ERROR') {
+                addLog({ type: 'ERROR', message: data.message, timestamp: new Date().toLocaleTimeString() });
+                dashConfigCurrent.innerHTML = `<span style="color: #ff6b6b;">${data.message}</span>`;
+                setTimeout(() => {
+                    const currentName = dashConfigSelect.value || 'None';
+                    dashConfigCurrent.innerHTML = 'Active: <strong>' + currentName + '</strong>';
+                }, 3000);
+            }
+        }
+
+        function applyPermissions(permissions) {
+            if (!permissions) return;
+
+            // Start/Stop
+            if (permissions.start === false) {
+                dashStartBtn.disabled = true;
+                dashStopBtn.disabled = true;
+                dashStartBtn.style.opacity = '0.35'; dashStartBtn.style.cursor = 'not-allowed';
+                dashStopBtn.style.opacity = '0.35'; dashStopBtn.style.cursor = 'not-allowed';
+            } else {
+                dashStartBtn.disabled = false;
+                dashStopBtn.disabled = false;
+                dashStartBtn.style.opacity = '1'; dashStartBtn.style.cursor = 'pointer';
+                dashStopBtn.style.opacity = '1'; dashStopBtn.style.cursor = 'pointer';
+            }
+
+            // Config Loading
+            if (permissions.config === false) {
+                dashConfigCard.style.opacity = '0.4';
+                dashConfigCard.style.pointerEvents = 'none';
+            } else {
+                dashConfigCard.style.opacity = '';
+                dashConfigCard.style.pointerEvents = '';
+            }
+        }
+
+        function populateConfigs(configs, currentConfig) {
+            dashConfigSelect.innerHTML = '';
+            if (!configs || configs.length === 0) {
+                dashConfigSelect.innerHTML = '<option value="">No configs found</option>';
+                dashConfigLoad.disabled = true;
+                return;
+            }
+            configs.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.textContent = name;
+                dashConfigSelect.appendChild(opt);
+            });
+            dashConfigLoad.disabled = false;
+            if (currentConfig) {
+                dashConfigSelect.value = currentConfig;
+                dashConfigCurrent.innerHTML = 'Active: <strong>' + currentConfig + '</strong>';
+            }
+        }
+
+        function updateMacroState(status) {
+            dashStatusText.textContent = status;
+            if (status === 'Running') {
+                dashStatusDot.classList.add('running');
+            } else {
+                dashStatusDot.classList.remove('running');
+            }
+        }
+
+        function addLog(log) {
+            const div = document.createElement('div');
+            div.className = 'dash-log-entry';
+
+            const ts = document.createElement('span');
+            ts.className = 'dash-log-ts';
+            ts.textContent = log.timestamp;
+
+            const type = document.createElement('span');
+            type.className = 'dash-log-type ' + (log.type || 'info').toLowerCase();
+            type.textContent = log.type;
+
+            const msg = document.createElement('span');
+            msg.className = 'dash-log-msg';
+            msg.textContent = log.message;
+
+            div.append(ts, type, msg);
+            dashLogs.appendChild(div);
+            dashLogs.scrollTop = dashLogs.scrollHeight;
+
+            // Cap at 50
+            while (dashLogs.children.length > 50) dashLogs.removeChild(dashLogs.firstChild);
+        }
+
+        function handleDisconnect() {
+            connection = null;
+            if (peer) { peer.destroy(); peer = null; }
+            landingView.classList.remove('hidden');
+            dashboardView.classList.remove('active');
+            navLinksMain.style.display = '';
+            dashVideo.srcObject = null;
+            dashVideoPlaceholder.classList.remove('hidden');
+            dashLogs.innerHTML = '';
+            updateMacroState('Stopped');
+            dashConfigSelect.innerHTML = '<option value="">No configs available</option>';
+            dashConfigLoad.disabled = true;
+            dashConfigCurrent.innerHTML = 'No config loaded.';
+        }
+
+        dashStartBtn.addEventListener('click', () => {
+            if (connection && connection.open) connection.send({ type: 'START_MACRO' });
+        });
+        dashStopBtn.addEventListener('click', () => {
+            if (connection && connection.open) connection.send({ type: 'STOP_MACRO' });
+        });
+        dashDisconnect.addEventListener('click', () => {
+            if (connection) connection.close();
+            handleDisconnect();
+        });
+
+        dashConfigLoad.addEventListener('click', () => {
+            const selected = dashConfigSelect.value;
+            if (!selected || !connection || !connection.open) return;
+            dashConfigLoad.disabled = true;
+            dashConfigCurrent.innerHTML = '<span style="color: #8b949e;">Loading...</span>';
+            connection.send({ type: 'LOAD_CONFIG', configName: selected });
+            setTimeout(() => { dashConfigLoad.disabled = false; }, 2000);
+        });
+
+        // ── Modal Handlers ──
+        const logsOverlay = document.getElementById('logs-modal-overlay');
+        document.getElementById('open-logs-btn').addEventListener('click', () => {
+            logsOverlay.classList.remove('hidden');
+            // Force reflow to guarantee CSS transition applies
+            void logsOverlay.offsetWidth;
+            logsOverlay.classList.add('active');
+            if (dashLogs) dashLogs.scrollTop = dashLogs.scrollHeight;
+        });
+        function closeLogsModal() {
+            logsOverlay.classList.remove('active');
+            setTimeout(() => logsOverlay.classList.add('hidden'), 350);
+        }
+        document.getElementById('close-logs-btn').addEventListener('click', closeLogsModal);
+        logsOverlay.addEventListener('click', e => { if (e.target === logsOverlay) closeLogsModal(); });
+
+        const videoWrap = document.getElementById('dash-video-wrap');
+        const fullscreenBtn = document.getElementById('dash-fullscreen-btn');
+        const dashVideoEl = document.getElementById('dash-video');
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (videoWrap.requestFullscreen) videoWrap.requestFullscreen();
+                else if (videoWrap.webkitRequestFullscreen) videoWrap.webkitRequestFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        dashVideoEl.addEventListener('dblclick', toggleFullscreen);
+
+        // Return to landing on logo click
+        document.getElementById('nav-logo-link').addEventListener('click', (e) => {
+            if (dashboardView.classList.contains('active')) {
+                e.preventDefault();
+                if (connection) connection.close();
+                handleDisconnect();
+            }
+        });
     </script>
 
 </body>
