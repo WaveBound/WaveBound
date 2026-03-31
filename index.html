@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wavebound</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="remote.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -15,716 +16,6 @@
     <link rel="icon" type="image/png"
         href="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        /* ── Remote Connect Modal ── */
-        .rc-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s var(--ease);
-        }
-
-        .rc-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .rc-modal {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-hover);
-            border-radius: 22px;
-            padding: 48px 44px 40px;
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
-            transform: translateY(20px) scale(0.97);
-            transition: transform 0.4s var(--ease);
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rc-overlay.active .rc-modal {
-            transform: none;
-        }
-
-        .rc-modal::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 20%;
-            right: 20%;
-            height: 1px;
-            background: linear-gradient(to right, transparent, var(--accent-border), transparent);
-        }
-
-        .rc-modal h2 {
-            font-size: 1.4rem;
-            margin-bottom: 8px;
-        }
-
-        .rc-modal p {
-            color: var(--muted);
-            font-size: 0.92rem;
-            margin-bottom: 28px;
-            line-height: 1.6;
-        }
-
-        .rc-input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-hover);
-            background: var(--bg);
-            color: var(--white);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            text-align: center;
-            letter-spacing: 3px;
-            outline: none;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-
-        .rc-input:focus {
-            border-color: var(--accent);
-        }
-
-        .rc-input::placeholder {
-            color: #3f3f46;
-            letter-spacing: 2px;
-        }
-
-        .rc-btn {
-            width: 100%;
-            margin-top: 16px;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: var(--white);
-            color: #000;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: transform 0.3s var(--ease), box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rc-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 32px rgba(255, 255, 255, 0.15);
-        }
-
-        .rc-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .rc-status {
-            margin-top: 16px;
-            font-size: 0.82rem;
-            color: var(--muted);
-            min-height: 20px;
-        }
-
-        .rc-close {
-            position: absolute;
-            top: 16px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: color 0.2s;
-            padding: 4px;
-        }
-
-        .rc-close:hover {
-            color: var(--white);
-        }
-
-        /* ── Command Center View (Dashboard) ── */
-        .dashboard-view {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 1000;
-            overflow: hidden;
-        }
-
-        .dashboard-view.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .landing-view.hidden {
-            display: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Sidebar Header */
-        .cmd-sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            border-bottom: 1px solid #1a1a1a;
-            background: #000;
-        }
-
-        .cmd-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: -0.5px;
-        }
-
-        .cmd-brand img {
-            height: 24px;
-        }
-
-        .cmd-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            font-family: 'JetBrains Mono', monospace;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .cmd-ping-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #51cf66;
-            box-shadow: 0 0 10px rgba(81, 207, 102, 0.5);
-            animation: blink 2.4s ease-in-out infinite;
-        }
-
-        .cmd-btn-danger {
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            color: #ff6b6b;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .cmd-btn-danger:hover {
-            background: rgba(255, 107, 107, 0.2);
-            transform: translateY(-1px);
-        }
-
-        /* Main Workspace Desktop Layout */
-        .cmd-workspace {
-            display: flex;
-            flex: 1;
-            height: 100vh;
-            width: 100vw;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Video Stage (The Anchor) */
-        .cmd-stage {
-            flex: 1;
-            background: #000;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #1a1a1a;
-            z-index: 10;
-        }
-
-        .cmd-video-container {
-            flex: 1;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .cmd-video-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-
-        .cmd-video-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #555555;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 1px;
-        }
-
-        .cmd-video-overlay i {
-            font-size: 3rem;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-        }
-
-        .cmd-video-overlay.hidden {
-            display: none;
-        }
-
-        .dash-fullscreen-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 44px;
-            height: 44px;
-            background: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            color: #c9d1d9;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .dash-fullscreen-btn:hover {
-            background: #111111;
-            color: #fff;
-            transform: scale(1.05);
-        }
-
-        /* Left/Right Control Sidebar */
-        .cmd-sidebar {
-            width: 320px;
-            background: #0a0a0a;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            z-index: 20;
-            border-left: 1px solid #1a1a1a;
-        }
-
-        .cmd-panel {
-            padding: 14px 18px;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .cmd-panel-head {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Engine Status Panel */
-        .cmd-engine-status {
-            background: #000;
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .engine-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #ff6b6b;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
-            transition: all 0.3s;
-        }
-
-        .engine-dot.running {
-            background: #51cf66;
-            box-shadow: 0 0 10px rgba(81, 207, 102, 0.4);
-        }
-
-        .cmd-engine-status strong {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            color: #fff;
-            font-size: 0.95rem;
-        }
-
-        .cmd-ignition {
-            display: flex;
-            gap: 8px;
-        }
-
-        .cmd-btn-start,
-        .cmd-btn-stop {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 800;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .cmd-btn-start {
-            background: rgba(81, 207, 102, 0.1);
-            border: 1px solid rgba(81, 207, 102, 0.3);
-            color: #51cf66;
-        }
-
-        .cmd-btn-start:hover {
-            background: rgba(81, 207, 102, 0.2);
-            box-shadow: 0 4px 16px rgba(81, 207, 102, 0.15);
-        }
-
-        .cmd-btn-stop {
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            color: #ff6b6b;
-        }
-
-        .cmd-btn-stop:hover {
-            background: rgba(255, 107, 107, 0.2);
-            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.15);
-        }
-
-        /* Config Panel */
-        .cmd-config-box {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .cmd-select {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid #1a1a1a;
-            background: #000;
-            color: #c9d1d9;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            outline: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%238b949e'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            cursor: pointer;
-            transition: border 0.2s;
-        }
-
-        .cmd-select:focus {
-            border-color: #58a6ff;
-        }
-
-        .cmd-btn-primary {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(88, 166, 255, 0.3);
-            background: rgba(88, 166, 255, 0.1);
-            color: #58a6ff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .cmd-btn-primary:hover:not(:disabled) {
-            background: rgba(88, 166, 255, 0.2);
-        }
-
-        .cmd-btn-primary:disabled {
-            opacity: 0.4;
-            background: #111111;
-            color: #555555;
-            border-color: #1a1a1a;
-            cursor: not-allowed;
-        }
-
-        .cmd-config-text {
-            margin-top: 10px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            background: rgba(88, 166, 255, 0.05);
-            color: #8b949e;
-            border: 1px solid rgba(88, 166, 255, 0.1);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-        }
-
-        .cmd-config-text strong {
-            color: #58a6ff;
-            font-weight: bold;
-        }
-
-        /* Terminal Flex (Removed in favor of modal) */
-        .cmd-terminal {
-            background: #000;
-            overflow-y: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: #c9d1d9;
-        }
-
-        .cmd-stage:fullscreen {
-            border: none;
-        }
-
-        .cmd-stage:-webkit-full-screen {
-            border: none;
-        }
-
-        /* Logs (Matched to Desktop) */
-        .dash-log-entry {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(88, 166, 255, 0.08);
-        }
-
-        .dash-log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .dash-log-ts {
-            color: #8b949e;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .dash-log-type {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7em;
-            font-weight: bold;
-            text-transform: uppercase;
-            min-width: 50px;
-            text-align: center;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .dash-log-type.info {
-            background-color: rgba(88, 166, 255, 0.2);
-            color: #58a6ff;
-            border: 1px solid rgba(88, 166, 255, 0.3);
-        }
-
-        .dash-log-type.macro {
-            background-color: rgba(81, 207, 102, 0.2);
-            color: #51cf66;
-            border: 1px solid rgba(81, 207, 102, 0.3);
-        }
-
-        .dash-log-type.error {
-            background-color: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-            border: 1px solid rgba(255, 107, 107, 0.3);
-        }
-
-        .dash-log-msg {
-            color: #c9d1d9;
-            word-break: break-word;
-        }
-
-        /* Command Center Mobile Resizing */
-        @media (max-width: 900px) {
-            .cmd-workspace {
-                flex-direction: column;
-            }
-
-            .cmd-stage {
-                order: -1;
-                flex: none;
-                height: 35vh;
-                border-right: none;
-                border-bottom: 1px solid #1a1a1a;
-                min-height: 250px;
-            }
-
-            .cmd-sidebar {
-                width: 100%;
-                flex: 1;
-                overflow-y: auto;
-                background: #0a0a0a;
-                border-left: none;
-            }
-
-            .cmd-ignition {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .dash-fullscreen-btn {
-                display: none;
-            }
-
-            /* Mobile Upscaling for Touch Targets */
-            .cmd-panel {
-                padding: 20px 24px;
-                border-bottom: 1px solid #111;
-            }
-
-            .cmd-panel-head {
-                font-size: 0.8rem;
-                margin-bottom: 16px;
-            }
-
-            .cmd-btn-start,
-            .cmd-btn-stop {
-                padding: 18px;
-                font-size: 1.05rem;
-            }
-
-            .cmd-select {
-                padding: 16px;
-                font-size: 1rem;
-            }
-
-            .cmd-btn-primary {
-                padding: 16px;
-                font-size: 1.05rem;
-            }
-
-            .cmd-config-text {
-                font-size: 0.85rem;
-                padding: 12px 16px;
-            }
-
-            .cmd-engine-status {
-                padding: 16px;
-            }
-
-            #dash-disconnect-panel {
-                margin-top: auto;
-                padding: 16px !important;
-                border-top: 1px solid #1a1a1a;
-            }
-
-            #dash-disconnect {
-                padding: 16px !important;
-                font-size: 1.05rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dash-config-select {
-                width: 100%;
-                padding: 14px 16px;
-                font-size: 1rem;
-            }
-
-            .dash-config-load {
-                width: 100%;
-                padding: 14px;
-                font-size: 0.92rem;
-                text-align: center;
-            }
-
-            .dash-video-wrap {
-                border-radius: 10px;
-            }
-
-            .dash-fullscreen-btn {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            .dash-logs {
-                max-height: 180px;
-                font-size: 0.62rem;
-            }
-
-            .rc-modal {
-                padding: 32px 24px 28px;
-                border-radius: 16px;
-            }
-
-            .rc-input {
-                font-size: 1.1rem;
-                padding: 14px 16px;
-            }
-
-            .rc-btn {
-                padding: 15px;
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .dash-container {
-                padding: 72px 12px 24px;
-            }
-
-            .dash-title {
-                font-size: 1.05rem;
-            }
-
-            .dash-card {
-                padding: 14px;
-            }
-
-            .dash-card-header h3 {
-                font-size: 0.65rem;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -743,15 +34,16 @@
             <div class="nav-links" id="nav-links-main">
                 <a href="#features">Features</a>
                 <a href="#download">Download</a>
-                <a href="#" id="remote-connect-link" style="color: var(--accent);">
-                    <i class="fas fa-wifi" style="margin-right: 4px;"></i>
-                    Remote
+            </div>
+
+            <!-- GitHub Header Actions -->
+            <div class="nav-actions">
+                <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="nav-btn nav-btn-ghost">
+                    <i class="fab fa-github"></i>
+                    <span class="nav-btn-text">GitHub</span>
                 </a>
             </div>
-            <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="nav-gh">
-                <i class="fab fa-github"></i>
-                GitHub
-            </a>
+
         </div>
     </nav>
 
@@ -806,9 +98,10 @@
                         Download free
                         <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="btn-ghost">
-                        <i class="fab fa-github"></i>
-                        View on GitHub
+                    <!-- Prominent Remote Button in Hero -->
+                    <a href="#" class="btn-outline-accent trigger-remote">
+                        <i class="fas fa-wifi"></i>
+                        Remote Connect
                     </a>
                 </div>
             </div>
@@ -1064,7 +357,8 @@
                 style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                 <h2
                     style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
-                    <i class="fas fa-terminal" style="color: #8b949e;"></i> Live Terminal Feed</h2>
+                    <i class="fas fa-terminal" style="color: #8b949e;"></i> Live Terminal Feed
+                </h2>
                 <button class="rc-close" id="close-logs-btn" style="position: static;"><i
                         class="fas fa-times"></i></button>
             </div>
@@ -1114,9 +408,10 @@
         }, { threshold: 0.1 });
         document.querySelectorAll('[data-reveal]').forEach(el => ro.observe(el));
 
+        // Smooth scroll adjusted to ignore buttons that trigger the remote modal
         document.querySelectorAll('a[href^="#"]').forEach(a => {
             a.addEventListener('click', e => {
-                if (a.id === 'remote-connect-link') return; // handled separately
+                if (a.classList.contains('trigger-remote') || a.getAttribute('href') === '#') return;
                 const t = document.querySelector(a.getAttribute('href'));
                 if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
             });
@@ -1209,12 +504,15 @@
         const savedCode = localStorage.getItem('wb-remote-code');
         if (savedCode) codeInput.value = savedCode;
 
-        // Open / close modal
-        document.getElementById('remote-connect-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            overlay.classList.add('active');
-            codeInput.focus();
+        // Open Modal - Linked to all .trigger-remote elements
+        document.querySelectorAll('.trigger-remote').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                overlay.classList.add('active');
+                codeInput.focus();
+            });
         });
+
         closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
         overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
 
@@ -1246,7 +544,7 @@
                     // Switch views
                     landingView.classList.add('hidden');
                     dashboardView.classList.add('active');
-                    navLinksMain.style.display = 'none';
+                    if (navLinksMain) navLinksMain.style.display = 'none';
                     window.scrollTo(0, 0);
 
                     connection.send({ type: 'GET_STATE' });
@@ -1393,7 +691,7 @@
             if (peer) { peer.destroy(); peer = null; }
             landingView.classList.remove('hidden');
             dashboardView.classList.remove('active');
-            navLinksMain.style.display = '';
+            if (navLinksMain) navLinksMain.style.display = '';
             dashVideo.srcObject = null;
             dashVideoPlaceholder.classList.remove('hidden');
             dashLogs.innerHTML = '';
