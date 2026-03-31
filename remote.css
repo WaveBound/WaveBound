@@ -307,6 +307,8 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    z-index: 50;
+    /* Ensure it stays above the video feed */
 }
 
 .dash-fullscreen-btn:hover {
@@ -593,10 +595,6 @@
         gap: 12px;
     }
 
-    .dash-fullscreen-btn {
-        display: none;
-    }
-
     /* Mobile Upscaling for Touch Targets */
     .cmd-panel {
         padding: 20px 24px;
@@ -646,6 +644,14 @@
 }
 
 @media (max-width: 768px) {
+    .dash-fullscreen-btn {
+        /* Slightly shrink the button and tuck it tighter into the corner on smaller screens */
+        bottom: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+    }
+
     .dash-config-select {
         width: 100%;
         padding: 14px 16px;
@@ -661,11 +667,6 @@
 
     .dash-video-wrap {
         border-radius: 10px;
-    }
-
-    .dash-fullscreen-btn {
-        opacity: 1;
-        transform: translateY(0);
     }
 
     .dash-logs {
