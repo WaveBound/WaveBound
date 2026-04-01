@@ -1,4 +1,5 @@
 /* ── Remote Connect Modal (Landing Page) ── */
+
 .rc-overlay {
     position: fixed;
     inset: 0;
@@ -9,13 +10,18 @@
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+
+    /* Ensure completely hidden default state */
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.35s var(--ease);
+
+    transition: opacity 0.35s var(--ease), visibility 0.35s;
 }
 
 .rc-overlay.active {
     opacity: 1;
+    visibility: visible;
     pointer-events: all;
 }
 
@@ -78,6 +84,11 @@
 
 .rc-input:focus {
     border-color: var(--accent);
+}
+
+/* Override letter spacing for password field */
+.rc-input[type="password"] {
+    letter-spacing: normal;
 }
 
 .rc-btn {
@@ -249,6 +260,31 @@
     display: flex;
     gap: 8px;
     pointer-events: auto;
+}
+
+/* Monitor Select */
+.dash-select {
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    color: #c9d1d9;
+    padding: 8px 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    max-width: 150px;
+    text-overflow: ellipsis;
+}
+
+.dash-select:hover,
+.dash-select:focus {
+    background: #111111;
+    color: #fff;
+    border-color: var(--accent);
 }
 
 .cmd-btn-danger {

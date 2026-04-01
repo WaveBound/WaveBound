@@ -48,9 +48,14 @@
         <div class="rc-modal">
             <button class="rc-close" id="rc-close">&times;</button>
             <h2>Remote Connect</h2>
-            <p>Enter the pairing code shown in your Wavebound desktop app to connect.</p>
+            <p>Enter the pairing code and password shown in your Wavebound desktop app to connect.</p>
             <input type="text" class="rc-input" id="rc-code-input" placeholder="wb-xxxxxx" autocomplete="off"
                 autocorrect="off" maxlength="9" spellcheck="false">
+
+            <!-- NEW: Password Input -->
+            <input type="password" class="rc-input" id="rc-pass-input" placeholder="Password (Leave blank if none)"
+                style="margin-top: 12px; letter-spacing: normal;">
+
             <button class="rc-btn" id="rc-connect-btn">Connect</button>
             <div class="rc-status" id="rc-status"></div>
         </div>
@@ -131,6 +136,10 @@
                     <span class="cmd-ping-dot"></span> WaveBound PC
                 </div>
                 <div class="remote-actions">
+                    <!-- NEW: Monitor Selection Dropdown -->
+                    <select id="dash-monitor-select" class="dash-select" style="display:none;"
+                        title="Select Monitor"></select>
+
                     <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
                         <i class="fas fa-expand"></i>
                     </button>
@@ -263,6 +272,7 @@
 
         const overlay = document.getElementById('rc-overlay');
         const codeInput = document.getElementById('rc-code-input');
+        const passInput = document.getElementById('rc-pass-input');
         const connectBtn = document.getElementById('rc-connect-btn');
         const statusEl = document.getElementById('rc-status');
         const closeBtn = document.getElementById('rc-close');
@@ -275,6 +285,7 @@
         const dashVideo = document.getElementById('dash-video');
         const dashVideoPlaceholder = document.getElementById('dash-video-placeholder');
         const dashDisconnect = document.getElementById('dash-disconnect');
+        const dashMonitorSelect = document.getElementById('dash-monitor-select');
 
         const savedCode = localStorage.getItem('wb-remote-code');
         if (savedCode) codeInput.value = savedCode;
@@ -292,9 +303,12 @@
 
         connectBtn.addEventListener('click', doConnect);
         codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
+        passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
 
         function doConnect() {
             let code = codeInput.value.trim().toLowerCase();
+            let password = passInput.value;
+
             if (!code) return;
             if (!code.startsWith('wb-')) code = 'wb-' + code;
 
@@ -310,18 +324,9 @@
 
                 connection.on('open', () => {
                     localStorage.setItem('wb-remote-code', code);
-                    overlay.classList.remove('active');
-                    connectBtn.disabled = false;
-                    statusEl.textContent = '';
-
-                    // Switch to Dashboard
-                    landingView.classList.add('hidden');
-                    dashboardView.classList.add('active');
-                    if (navLinksMain) navLinksMain.style.display = 'none';
-                    window.scrollTo(0, 0);
-                    dashVideoWrap.focus();
-
-                    connection.send({ type: 'GET_STATE' });
+                    // Send auth packet immediately upon connection
+                    connection.send({ type: 'AUTH', password: password });
+                    statusEl.textContent = 'Authenticating...';
                 });
 
                 connection.on('data', handleData);
@@ -352,16 +357,68 @@
             });
         }
 
-        let hostScreenWidth = 1920;
-        let hostScreenHeight = 1080;
+        // Store the active monitor's specific bounds (offset x/y and dimensions)
+        let activeMonitorBounds = { x: 0, y: 0, width: 1920, height: 1080 };
 
         function handleData(data) {
             if (!data) return;
+
+            // Handle Authentication Response
+            if (data.type === 'AUTH_RESULT') {
+                if (data.success) {
+                    overlay.classList.remove('active');
+                    connectBtn.disabled = false;
+                    statusEl.textContent = '';
+
+                    // Switch to Dashboard
+                    landingView.classList.add('hidden');
+                    dashboardView.classList.add('active');
+                    if (navLinksMain) navLinksMain.style.display = 'none';
+                    window.scrollTo(0, 0);
+                    dashVideoWrap.focus();
+
+                    // Desktop automatically sends MONITOR_LIST on successful connect
+                } else {
+                    statusEl.textContent = data.message || 'Authentication failed.';
+                    statusEl.style.color = '#ff6b6b';
+                    connectBtn.disabled = false;
+                }
+            }
+
+            // Handle Monitor List
+            if (data.type === 'MONITOR_LIST') {
+                dashMonitorSelect.innerHTML = '';
+                if (data.sources && data.sources.length > 0) {
+                    dashMonitorSelect.style.display = 'block';
+                    data.sources.forEach(src => {
+                        const opt = document.createElement('option');
+                        opt.value = src.id;
+                        opt.textContent = src.name;
+                        dashMonitorSelect.appendChild(opt);
+                    });
+                } else {
+                    dashMonitorSelect.style.display = 'none';
+                }
+            }
+
+            // Handle Screen info for coordinate mapping
             if (data.type === 'SCREEN_INFO' || data.type === 'STATE_SYNC') {
-                if (data.screenWidth) hostScreenWidth = data.screenWidth;
-                if (data.screenHeight) hostScreenHeight = data.screenHeight;
+                if (data.bounds) {
+                    activeMonitorBounds = data.bounds; // Receives {x, y, width, height}
+                } else {
+                    // Fallback for old method
+                    if (data.screenWidth) activeMonitorBounds.width = data.screenWidth;
+                    if (data.screenHeight) activeMonitorBounds.height = data.screenHeight;
+                }
             }
         }
+
+        // Change monitor dropdown
+        dashMonitorSelect.addEventListener('change', (e) => {
+            if (connection && connection.open) {
+                connection.send({ type: 'CHANGE_MONITOR', sourceId: e.target.value });
+            }
+        });
 
         function handleDisconnect() {
             connection = null;
@@ -371,6 +428,7 @@
             if (navLinksMain) navLinksMain.style.display = '';
             dashVideo.srcObject = null;
             dashVideoPlaceholder.classList.remove('hidden');
+            dashMonitorSelect.style.display = 'none';
         }
 
         dashDisconnect.addEventListener('click', () => {
@@ -388,8 +446,9 @@
 
         function getMappedCoordinates(e) {
             const rect = dashVideo.getBoundingClientRect();
-            const videoW = dashVideo.videoWidth || hostScreenWidth;
-            const videoH = dashVideo.videoHeight || hostScreenHeight;
+            // Fallback to bounds width/height if video hasn't loaded dimensions yet
+            const videoW = dashVideo.videoWidth || activeMonitorBounds.width;
+            const videoH = dashVideo.videoHeight || activeMonitorBounds.height;
 
             if (videoW === 0 || videoH === 0) return null;
 
@@ -415,8 +474,9 @@
 
             if (x < 0 || x > drawWidth || y < 0 || y > drawHeight) return null;
 
-            const mappedX = Math.round((x / drawWidth) * hostScreenWidth);
-            const mappedY = Math.round((y / drawHeight) * hostScreenHeight);
+            // Map the coordinates to the specific monitor bounds in the virtual desktop
+            const mappedX = Math.round((x / drawWidth) * videoW) + activeMonitorBounds.x;
+            const mappedY = Math.round((y / drawHeight) * videoH) + activeMonitorBounds.y;
 
             return { x: mappedX, y: mappedY };
         }
@@ -477,7 +537,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (!connection || !connection.open) return;
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
             if (dashboardView.classList.contains('active')) {
                 connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' } });
                 if (e.key !== 'F5' && e.key !== 'F12') e.preventDefault();
@@ -486,7 +546,7 @@
 
         document.addEventListener('keyup', (e) => {
             if (!connection || !connection.open) return;
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
             if (dashboardView.classList.contains('active')) {
                 connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' } });
                 if (e.key !== 'F5' && e.key !== 'F12') e.preventDefault();
@@ -654,10 +714,10 @@
                     if (key.match(/[a-z]/i) && (shiftActive || capsActive)) {
                         finalKey = 'Shift+' + key.toLowerCase();
                     } else if (shiftActive) {
-                        finalKey = 'Shift+' + key; // Example: Shift+1 for !
+                        finalKey = 'Shift+' + key;
                     }
                 } else if (shiftActive) {
-                    finalKey = 'Shift+' + key; // Allow Shift+ArrowUp etc.
+                    finalKey = 'Shift+' + key;
                 }
 
                 connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: finalKey, action: 'down' } });
@@ -688,7 +748,6 @@
                 connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: finalKey, action: 'up' } });
                 btn.classList.remove('active');
 
-                // Auto-disable shift state after pressing a key
                 if (shiftActive) {
                     shiftActive = false;
                     document.querySelectorAll('.mk-key[data-key="Shift"]').forEach(b => b.classList.remove('toggled'));
@@ -718,7 +777,6 @@
             }
         }
 
-        // Listen for fullscreen changes to update the icon properly (catches the Esc key!)
         const updateFullscreenIcon = () => {
             if (document.fullscreenElement || document.webkitFullscreenElement) {
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
