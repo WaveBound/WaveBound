@@ -60,7 +60,7 @@
         </div>
     </div>
 
-    <!-- Landing View (your existing site) -->
+    <!-- Landing View -->
     <div class="landing-view" id="landing-view">
         <section class="hero">
             <div class="hero-grid-bg"></div>
@@ -320,7 +320,7 @@
 
                 <!-- Bottom Disconnect Action -->
                 <div class="cmd-panel" id="dash-disconnect-panel"
-                    style="padding: 10px; border-bottom: none; border-top: 1px solid #1a1a1a; background: #000;">
+                    style="padding: 10px; border-bottom: none; border-top: 1px solid #1a1a1a; background: #000; margin-top: auto;">
                     <button class="cmd-btn-danger" id="dash-disconnect"
                         style="width: 100%; display: flex; justify-content: center; padding: 10px;">
                         <i class="fas fa-plug" style="margin-right: 6px;"></i> Disconnect Session
@@ -331,7 +331,8 @@
 
             <!-- Center Stage (Video Anchor) -->
             <main class="cmd-stage">
-                <div class="cmd-video-container" id="dash-video-wrap">
+                <!-- Wrapper for the video feed to attach mouse/keyboard events -->
+                <div class="cmd-video-container" id="dash-video-wrap" tabindex="0" style="outline: none;">
                     <video id="dash-video" autoplay playsinline muted></video>
 
                     <div class="cmd-video-overlay" id="dash-video-placeholder">
@@ -363,7 +364,7 @@
                         class="fas fa-times"></i></button>
             </div>
             <div id="dash-logs" class="cmd-terminal"
-                style="border: none; border-radius: 0 0 16px 16px; min-height: 40vh; max-height: 60vh; padding: 16px;">
+                style="border: none; border-radius: 0 0 16px 16px; min-height: 40vh; max-height: 60vh; padding: 16px; text-align: left;">
             </div>
         </div>
     </div>
@@ -478,33 +479,37 @@
         let peer = null;
         let connection = null;
 
+        // Overlay Elements
         const overlay = document.getElementById('rc-overlay');
         const codeInput = document.getElementById('rc-code-input');
         const connectBtn = document.getElementById('rc-connect-btn');
         const statusEl = document.getElementById('rc-status');
         const closeBtn = document.getElementById('rc-close');
+
+        // Views
         const landingView = document.getElementById('landing-view');
         const dashboardView = document.getElementById('dashboard-view');
         const navLinksMain = document.getElementById('nav-links-main');
 
+        // Dashboard Elements
         const dashStatusDot = document.getElementById('dash-status-dot');
         const dashStatusText = document.getElementById('dash-status-text');
         const dashStartBtn = document.getElementById('dash-start');
         const dashStopBtn = document.getElementById('dash-stop');
         const dashLogs = document.getElementById('dash-logs');
+        const dashVideoWrap = document.getElementById('dash-video-wrap');
         const dashVideo = document.getElementById('dash-video');
         const dashVideoPlaceholder = document.getElementById('dash-video-placeholder');
         const dashDisconnect = document.getElementById('dash-disconnect');
         const dashConfigSelect = document.getElementById('dash-config-select');
         const dashConfigLoad = document.getElementById('dash-config-load');
         const dashConfigCurrent = document.getElementById('dash-config-current');
-        const dashConfigFeedback = document.getElementById('dash-config-feedback');
-        const dashConfigCard = document.getElementById('dash-config-card');
 
+        // Store previous code
         const savedCode = localStorage.getItem('wb-remote-code');
         if (savedCode) codeInput.value = savedCode;
 
-        // Open Modal - Linked to all .trigger-remote elements
+        // Open Modal
         document.querySelectorAll('.trigger-remote').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -516,7 +521,7 @@
         closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
         overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
 
-        // Connect
+        // Connect Triggers
         connectBtn.addEventListener('click', doConnect);
         codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
 
@@ -541,11 +546,14 @@
                     connectBtn.disabled = false;
                     statusEl.textContent = '';
 
-                    // Switch views
+                    // Switch to Dashboard
                     landingView.classList.add('hidden');
                     dashboardView.classList.add('active');
                     if (navLinksMain) navLinksMain.style.display = 'none';
                     window.scrollTo(0, 0);
+
+                    // Auto-focus video wrapper to capture keyboard inputs instantly
+                    dashVideoWrap.focus();
 
                     connection.send({ type: 'GET_STATE' });
                 });
@@ -560,7 +568,7 @@
             });
 
             peer.on('call', (call) => {
-                call.answer(); // We don't send any stream back
+                call.answer(); // Receive stream without sending one back
                 call.on('stream', (remoteStream) => {
                     dashVideo.srcObject = remoteStream;
                     dashVideoPlaceholder.classList.add('hidden');
@@ -578,17 +586,31 @@
             });
         }
 
+        // ── Remote Input & Data Handlers ──
+        let hostScreenWidth = 1920;
+        let hostScreenHeight = 1080;
+        let isDragging = false;
+        let lastMoveTime = 0;
+
+        function syncHostResolution(data) {
+            if (data.screenWidth) hostScreenWidth = data.screenWidth;
+            if (data.screenHeight) hostScreenHeight = data.screenHeight;
+        }
+
         function handleData(data) {
             if (!data) return;
+
+            // Sync host dimensions whenever provided
+            if (data.type === 'SCREEN_INFO' || data.type === 'STATE_SYNC') {
+                syncHostResolution(data);
+            }
+
             if (data.type === 'STATUS_SYNC' || data.type === 'STATE_SYNC') {
                 updateMacroState(data.status);
                 if (data.type === 'STATE_SYNC') {
                     if (data.logs) { dashLogs.innerHTML = ''; data.logs.forEach(addLog); }
                     if (data.configs) populateConfigs(data.configs, data.currentConfig);
-                    if (data.permissions) applyPermissions(data.permissions);
                 }
-            } else if (data.type === 'PERMISSIONS_UPDATE') {
-                applyPermissions(data.permissions);
             } else if (data.type === 'CONFIG_LIST') {
                 populateConfigs(data.configs, data.currentConfig);
             } else if (data.type === 'CONFIG_LOADED') {
@@ -605,32 +627,6 @@
                     const currentName = dashConfigSelect.value || 'None';
                     dashConfigCurrent.innerHTML = 'Active: <strong>' + currentName + '</strong>';
                 }, 3000);
-            }
-        }
-
-        function applyPermissions(permissions) {
-            if (!permissions) return;
-
-            // Start/Stop
-            if (permissions.start === false) {
-                dashStartBtn.disabled = true;
-                dashStopBtn.disabled = true;
-                dashStartBtn.style.opacity = '0.35'; dashStartBtn.style.cursor = 'not-allowed';
-                dashStopBtn.style.opacity = '0.35'; dashStopBtn.style.cursor = 'not-allowed';
-            } else {
-                dashStartBtn.disabled = false;
-                dashStopBtn.disabled = false;
-                dashStartBtn.style.opacity = '1'; dashStartBtn.style.cursor = 'pointer';
-                dashStopBtn.style.opacity = '1'; dashStopBtn.style.cursor = 'pointer';
-            }
-
-            // Config Loading
-            if (permissions.config === false) {
-                dashConfigCard.style.opacity = '0.4';
-                dashConfigCard.style.pointerEvents = 'none';
-            } else {
-                dashConfigCard.style.opacity = '';
-                dashConfigCard.style.pointerEvents = '';
             }
         }
 
@@ -682,7 +678,6 @@
             dashLogs.appendChild(div);
             dashLogs.scrollTop = dashLogs.scrollHeight;
 
-            // Cap at 50
             while (dashLogs.children.length > 50) dashLogs.removeChild(dashLogs.firstChild);
         }
 
@@ -704,9 +699,11 @@
         dashStartBtn.addEventListener('click', () => {
             if (connection && connection.open) connection.send({ type: 'START_MACRO' });
         });
+
         dashStopBtn.addEventListener('click', () => {
             if (connection && connection.open) connection.send({ type: 'STOP_MACRO' });
         });
+
         dashDisconnect.addEventListener('click', () => {
             if (connection) connection.close();
             handleDisconnect();
@@ -721,30 +718,157 @@
             setTimeout(() => { dashConfigLoad.disabled = false; }, 2000);
         });
 
-        // ── Modal Handlers ──
+        // ── Remote Input: Coordinate Mapping ──
+        function getMappedCoordinates(e) {
+            const rect = dashVideo.getBoundingClientRect();
+            const videoW = dashVideo.videoWidth || hostScreenWidth;
+            const videoH = dashVideo.videoHeight || hostScreenHeight;
+
+            if (videoW === 0 || videoH === 0) return null;
+
+            const videoRatio = videoW / videoH;
+            const rectRatio = rect.width / rect.height;
+
+            let drawWidth, drawHeight, drawX, drawY;
+
+            if (videoRatio > rectRatio) {
+                drawWidth = rect.width;
+                drawHeight = rect.width / videoRatio;
+                drawX = 0;
+                drawY = (rect.height - drawHeight) / 2;
+            } else {
+                drawHeight = rect.height;
+                drawWidth = rect.height * videoRatio;
+                drawY = 0;
+                drawX = (rect.width - drawWidth) / 2;
+            }
+
+            const x = e.clientX - rect.left - drawX;
+            const y = e.clientY - rect.top - drawY;
+
+            if (x < 0 || x > drawWidth || y < 0 || y > drawHeight) return null;
+
+            const mappedX = Math.round((x / drawWidth) * hostScreenWidth);
+            const mappedY = Math.round((y / drawHeight) * hostScreenHeight);
+
+            return { x: mappedX, y: mappedY };
+        }
+
+        // ── Remote Input: Mouse Events ──
+        dashVideoWrap.addEventListener('mousemove', (e) => {
+            if (!connection || !connection.open) return;
+            const now = Date.now();
+            if (now - lastMoveTime < 16) return; // ~60Hz cap
+            lastMoveTime = now;
+
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y }
+                });
+            }
+        });
+
+        dashVideoWrap.addEventListener('mousedown', (e) => {
+            if (!connection || !connection.open) return;
+            dashVideoWrap.focus(); // Ensure wrapper keeps focus for keyboard strokes
+            isDragging = true;
+
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const btn = e.button === 2 ? 'right' : 'left';
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_MOUSE_CLICK', button: btn, action: 'down' }
+                });
+            }
+        });
+
+        dashVideoWrap.addEventListener('mouseup', (e) => {
+            if (!connection || !connection.open) return;
+            isDragging = false;
+
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const btn = e.button === 2 ? 'right' : 'left';
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_MOUSE_CLICK', button: btn, action: 'up' }
+                });
+            }
+        });
+
+        dashVideoWrap.addEventListener('contextmenu', e => e.preventDefault());
+
+        dashVideoWrap.addEventListener('wheel', (e) => {
+            if (!connection || !connection.open) return;
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const dir = e.deltaY < 0 ? 'up' : 'down';
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_SCROLL', amount: 1, direction: dir }
+                });
+            }
+        }, { passive: true });
+
+        // ── Remote Input: Keyboard Events ──
+        document.addEventListener('keydown', (e) => {
+            if (!connection || !connection.open) return;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+            if (dashboardView.classList.contains('active')) {
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' }
+                });
+
+                // Block defaults to stop spacebar page scrolling etc., except Developer Tools
+                if (e.key !== 'F5' && e.key !== 'F12') {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (!connection || !connection.open) return;
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+            if (dashboardView.classList.contains('active')) {
+                connection.send({
+                    type: 'REMOTE_INPUT',
+                    payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' }
+                });
+                if (e.key !== 'F5' && e.key !== 'F12') {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // ── Logs Modal & Fullscreen ──
         const logsOverlay = document.getElementById('logs-modal-overlay');
         document.getElementById('open-logs-btn').addEventListener('click', () => {
             logsOverlay.classList.remove('hidden');
-            // Force reflow to guarantee CSS transition applies
-            void logsOverlay.offsetWidth;
+            void logsOverlay.offsetWidth; // Force reflow
             logsOverlay.classList.add('active');
             if (dashLogs) dashLogs.scrollTop = dashLogs.scrollHeight;
         });
+
         function closeLogsModal() {
             logsOverlay.classList.remove('active');
             setTimeout(() => logsOverlay.classList.add('hidden'), 350);
         }
+
         document.getElementById('close-logs-btn').addEventListener('click', closeLogsModal);
         logsOverlay.addEventListener('click', e => { if (e.target === logsOverlay) closeLogsModal(); });
 
-        const videoWrap = document.getElementById('dash-video-wrap');
         const fullscreenBtn = document.getElementById('dash-fullscreen-btn');
-        const dashVideoEl = document.getElementById('dash-video');
 
         function toggleFullscreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (videoWrap.requestFullscreen) videoWrap.requestFullscreen();
-                else if (videoWrap.webkitRequestFullscreen) videoWrap.webkitRequestFullscreen();
+                if (dashVideoWrap.requestFullscreen) dashVideoWrap.requestFullscreen();
+                else if (dashVideoWrap.webkitRequestFullscreen) dashVideoWrap.webkitRequestFullscreen();
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
@@ -754,9 +878,8 @@
         }
 
         fullscreenBtn.addEventListener('click', toggleFullscreen);
-        dashVideoEl.addEventListener('dblclick', toggleFullscreen);
+        dashVideo.addEventListener('dblclick', toggleFullscreen);
 
-        // Return to landing on logo click
         document.getElementById('nav-logo-link').addEventListener('click', (e) => {
             if (dashboardView.classList.contains('active')) {
                 e.preventDefault();
@@ -765,7 +888,6 @@
             }
         });
     </script>
-
 </body>
 
 </html>
