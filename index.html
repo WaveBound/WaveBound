@@ -341,6 +341,98 @@
                         <small style="color: #555;">Video streaming must be enabled in the desktop app.</small>
                     </div>
 
+                    <!-- Mobile Tools Menu -->
+                    <div class="mobile-controls-bar" id="mobile-controls-bar">
+                        <button class="mc-btn active" id="mc-btn-left" title="Left Click"><i
+                                class="fas fa-mouse-pointer"></i></button>
+                        <button class="mc-btn" id="mc-btn-right" title="Right Click"><i
+                                class="fas fa-mouse"></i></button>
+                        <button class="mc-btn" id="mc-btn-hold" title="Drag / Hold Mode (Camera Turn)"><i
+                                class="fas fa-hand-rock"></i></button>
+                        <button class="mc-btn" id="mc-btn-kbd" title="Keyboard"><i class="fas fa-keyboard"></i></button>
+                    </div>
+
+                    <!-- Full Virtual Keyboard (No Numpad) -->
+                    <div class="mobile-keyboard" id="mobile-keyboard">
+                        <!-- Native Input Fallback for rapid string typing -->
+                        <div class="mk-row" style="margin-bottom: 4px;">
+                            <input type="text" id="mobile-text-input" class="mk-native-input"
+                                placeholder="Tap here to use phone keyboard..." autocomplete="off">
+                        </div>
+                        <div class="mk-row">
+                            <button class="mk-key mk-w15" data-key="Escape">Esc</button>
+                            <button class="mk-key" data-key="1">1</button>
+                            <button class="mk-key" data-key="2">2</button>
+                            <button class="mk-key" data-key="3">3</button>
+                            <button class="mk-key" data-key="4">4</button>
+                            <button class="mk-key" data-key="5">5</button>
+                            <button class="mk-key" data-key="6">6</button>
+                            <button class="mk-key" data-key="7">7</button>
+                            <button class="mk-key" data-key="8">8</button>
+                            <button class="mk-key" data-key="9">9</button>
+                            <button class="mk-key" data-key="0">0</button>
+                            <button class="mk-key" data-key="-">-</button>
+                            <button class="mk-key" data-key="=">=</button>
+                            <button class="mk-key mk-w20" data-key="Backspace">Bksp</button>
+                        </div>
+                        <div class="mk-row">
+                            <button class="mk-key mk-w15" data-key="Tab">Tab</button>
+                            <button class="mk-key" data-key="q">Q</button>
+                            <button class="mk-key" data-key="w">W</button>
+                            <button class="mk-key" data-key="e">E</button>
+                            <button class="mk-key" data-key="r">R</button>
+                            <button class="mk-key" data-key="t">T</button>
+                            <button class="mk-key" data-key="y">Y</button>
+                            <button class="mk-key" data-key="u">U</button>
+                            <button class="mk-key" data-key="i">I</button>
+                            <button class="mk-key" data-key="o">O</button>
+                            <button class="mk-key" data-key="p">P</button>
+                            <button class="mk-key" data-key="[">[</button>
+                            <button class="mk-key" data-key="]">]</button>
+                            <button class="mk-key mk-w15" data-key="\">\</button>
+                        </div>
+                        <div class="mk-row">
+                            <button class="mk-key mk-w20" data-key="CapsLock">Caps</button>
+                            <button class="mk-key" data-key="a">A</button>
+                            <button class="mk-key" data-key="s">S</button>
+                            <button class="mk-key" data-key="d">D</button>
+                            <button class="mk-key" data-key="f">F</button>
+                            <button class="mk-key" data-key="g">G</button>
+                            <button class="mk-key" data-key="h">H</button>
+                            <button class="mk-key" data-key="j">J</button>
+                            <button class="mk-key" data-key="k">K</button>
+                            <button class="mk-key" data-key="l">L</button>
+                            <button class="mk-key" data-key=";">;</button>
+                            <button class="mk-key" data-key="'">'</button>
+                            <button class="mk-key mk-w20" data-key="Enter">Enter</button>
+                        </div>
+                        <div class="mk-row">
+                            <button class="mk-key mk-w25" data-key="Shift">Shift</button>
+                            <button class="mk-key" data-key="z">Z</button>
+                            <button class="mk-key" data-key="x">X</button>
+                            <button class="mk-key" data-key="c">C</button>
+                            <button class="mk-key" data-key="v">V</button>
+                            <button class="mk-key" data-key="b">B</button>
+                            <button class="mk-key" data-key="n">N</button>
+                            <button class="mk-key" data-key="m">M</button>
+                            <button class="mk-key" data-key=",">,</button>
+                            <button class="mk-key" data-key=".">.</button>
+                            <button class="mk-key" data-key="/">/</button>
+                            <button class="mk-key mk-w25" data-key="Shift">Shift</button>
+                        </div>
+                        <div class="mk-row">
+                            <button class="mk-key mk-w15" data-key="Control">Ctrl</button>
+                            <button class="mk-key mk-w15" data-key="Meta">Win</button>
+                            <button class="mk-key mk-w15" data-key="Alt">Alt</button>
+                            <button class="mk-key mk-space" data-key=" ">Space</button>
+                            <button class="mk-key mk-w15" data-key="Alt">Alt</button>
+                            <button class="mk-key mk-w15" data-key="ArrowLeft">←</button>
+                            <button class="mk-key mk-w15" data-key="ArrowUp">↑</button>
+                            <button class="mk-key mk-w15" data-key="ArrowDown">↓</button>
+                            <button class="mk-key mk-w15" data-key="ArrowRight">→</button>
+                        </div>
+                    </div>
+
                     <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
                         <i class="fas fa-expand"></i>
                     </button>
@@ -843,6 +935,193 @@
                 if (e.key !== 'F5' && e.key !== 'F12') {
                     e.preventDefault();
                 }
+            }
+        });
+
+        // ── Mobile Mouse & Keyboard Integration ──
+        let mcMouseButton = 'left';
+        let mcHoldMode = false;
+        let activeTouchId = null;
+        let lastTwoFingerY = 0;
+        let isSimulatingDrag = false; // Tracks if a simulated mouse-down is active
+
+        const btnLeft = document.getElementById('mc-btn-left');
+        const btnRight = document.getElementById('mc-btn-right');
+        const btnHold = document.getElementById('mc-btn-hold');
+        const btnKbd = document.getElementById('mc-btn-kbd');
+        const mobileKbd = document.getElementById('mobile-keyboard');
+        const mobileTextInput = document.getElementById('mobile-text-input');
+
+        // Toolbar State Toggles
+        btnLeft.addEventListener('click', () => {
+            mcMouseButton = 'left';
+            btnLeft.classList.add('active');
+            btnRight.classList.remove('active');
+        });
+
+        btnRight.addEventListener('click', () => {
+            mcMouseButton = 'right';
+            btnRight.classList.add('active');
+            btnLeft.classList.remove('active');
+        });
+
+        btnHold.addEventListener('click', () => {
+            mcHoldMode = !mcHoldMode;
+            btnHold.classList.toggle('active', mcHoldMode);
+            // If turning off hold mode and we are dragging, release the mouse immediately
+            if (!mcHoldMode && isSimulatingDrag && connection && connection.open) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            }
+        });
+
+        btnKbd.addEventListener('click', () => {
+            mobileKbd.classList.toggle('active');
+            btnKbd.classList.toggle('active');
+        });
+
+        // Touch -> Mouse Translation
+        dashVideoWrap.addEventListener('touchstart', (e) => {
+            if (!connection || !connection.open) return;
+            // Ignore UI elements
+            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn')) return;
+
+            e.preventDefault(); // Stop screen scrolling
+
+            // Handle Two-finger scroll
+            if (e.touches.length === 2) {
+                lastTwoFingerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                return;
+            }
+
+            const touch = e.changedTouches[0];
+            activeTouchId = touch.identifier;
+            const coords = getMappedCoordinates(touch);
+
+            if (coords) {
+                // Move to touch point instantly
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y } });
+
+                // If in Hold Mode (Camera panning), start dragging immediately
+                if (mcHoldMode) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'down' } });
+                    isSimulatingDrag = true;
+                }
+            }
+        }, { passive: false });
+
+        dashVideoWrap.addEventListener('touchmove', (e) => {
+            if (!connection || !connection.open) return;
+            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn')) return;
+            e.preventDefault();
+
+            // Two-finger scroll
+            if (e.touches.length === 2) {
+                const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                const deltaY = lastTwoFingerY - currentY;
+                if (Math.abs(deltaY) > 10) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_SCROLL', amount: 1, direction: deltaY > 0 ? 'down' : 'up' } });
+                    lastTwoFingerY = currentY;
+                }
+                return;
+            }
+
+            let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+            if (!touch) return;
+
+            // Throttle movement to ~60hz
+            const now = Date.now();
+            if (now - lastMoveTime < 16) return;
+            lastMoveTime = now;
+
+            const coords = getMappedCoordinates(touch);
+            if (coords) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y } });
+            }
+        }, { passive: false });
+
+        dashVideoWrap.addEventListener('touchend', (e) => {
+            if (!connection || !connection.open) return;
+
+            let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+            if (!touch) return;
+            activeTouchId = null;
+
+            if (mcHoldMode) {
+                // We were dragging. Release the click.
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            } else {
+                // Normal Mode: Fire a quick click at the spot we lifted our finger
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'down' } });
+                setTimeout(() => {
+                    if (connection && connection.open) {
+                        connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                    }
+                }, 50); // Small 50ms delay makes the click register reliably in games
+            }
+        });
+
+        dashVideoWrap.addEventListener('touchcancel', () => {
+            activeTouchId = null;
+            if (isSimulatingDrag && connection && connection.open) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            }
+        });
+
+        // ── Virtual Keyboard Handlers ──
+        // Because mobile phones support multi-touch, users can hold "Shift" with one finger 
+        // and tap "W" with another. The touch events handle this natively!
+        document.querySelectorAll('.mk-key').forEach(btn => {
+            const triggerDown = (e) => {
+                e.preventDefault();
+                if (!connection || !connection.open) return;
+                const key = btn.getAttribute('data-key');
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'down' } });
+                btn.classList.add('active');
+            };
+
+            const triggerUp = (e) => {
+                e.preventDefault();
+                if (!connection || !connection.open) return;
+                const key = btn.getAttribute('data-key');
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'up' } });
+                btn.classList.remove('active');
+            };
+
+            // Touch events for mobile
+            btn.addEventListener('touchstart', triggerDown, { passive: false });
+            btn.addEventListener('touchend', triggerUp, { passive: false });
+            btn.addEventListener('touchcancel', triggerUp, { passive: false });
+
+            // Mouse events for desktop/testing
+            btn.addEventListener('mousedown', triggerDown);
+            btn.addEventListener('mouseup', triggerUp);
+            btn.addEventListener('mouseleave', triggerUp);
+        });
+
+        // Native Keyboard Text-Entry Fallback
+        mobileTextInput.addEventListener('input', (e) => {
+            if (!connection || !connection.open) return;
+            const val = e.target.value;
+            if (val.length > 0) {
+                // Send the exact character typed
+                const char = val[val.length - 1];
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'down' } });
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'up' } });
+
+                // Clear instantly so it's ready for the next character
+                setTimeout(() => { e.target.value = ''; }, 10);
+            }
+        });
+
+        mobileTextInput.addEventListener('keydown', (e) => {
+            if (!connection || !connection.open) return;
+            // Catch backspace & enter which don't trigger normal text inputs on some mobile keyboards
+            if (e.key === 'Backspace' || e.key === 'Enter') {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' } });
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' } });
             }
         });
 
