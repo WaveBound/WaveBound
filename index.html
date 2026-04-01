@@ -120,25 +120,26 @@
     <!-- ── Pure Remote View ── -->
     <div class="dashboard-view" id="dashboard-view">
 
-        <!-- Floating Header -->
-        <div class="remote-header">
-            <div class="remote-brand">
-                <img src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
-                    alt="Wavebound">
-                <span class="cmd-ping-dot"></span> WaveBound PC
-            </div>
-            <div class="remote-actions">
-                <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
-                    <i class="fas fa-expand"></i>
-                </button>
-                <button class="cmd-btn-danger" id="dash-disconnect">
-                    <i class="fas fa-plug"></i> Disconnect
-                </button>
-            </div>
-        </div>
-
         <!-- Video Stage -->
         <div class="cmd-video-container" id="dash-video-wrap" tabindex="0" style="outline: none;">
+
+            <!-- Floating Header Moved inside the wrapper so it shows in fullscreen -->
+            <div class="remote-header">
+                <div class="remote-brand">
+                    <img src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
+                        alt="Wavebound">
+                    <span class="cmd-ping-dot"></span> WaveBound PC
+                </div>
+                <div class="remote-actions">
+                    <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="cmd-btn-danger" id="dash-disconnect">
+                        <i class="fas fa-plug"></i> Disconnect
+                    </button>
+                </div>
+            </div>
+
             <video id="dash-video" autoplay playsinline muted></video>
 
             <div class="cmd-video-overlay" id="dash-video-placeholder">
@@ -706,17 +707,29 @@
 
         // ── Fullscreen Toggle ──
         const fullscreenBtn = document.getElementById('dash-fullscreen-btn');
+
         function toggleFullscreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 if (dashVideoWrap.requestFullscreen) dashVideoWrap.requestFullscreen();
                 else if (dashVideoWrap.webkitRequestFullscreen) dashVideoWrap.webkitRequestFullscreen();
-                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
                 else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
             }
         }
+
+        // Listen for fullscreen changes to update the icon properly (catches the Esc key!)
+        const updateFullscreenIcon = () => {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        };
+
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         dashVideo.addEventListener('dblclick', toggleFullscreen);
 
