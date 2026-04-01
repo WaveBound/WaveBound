@@ -483,6 +483,17 @@
     flex: 6.0;
 }
 
+/* Mobile Small Screen / Space Savers */
+@media (max-width: 650px) {
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .dash-select {
+        max-width: 110px;
+    }
+}
+
 /* Landscape Tweaks */
 @media (orientation: landscape) and (max-height: 600px) {
     .mobile-keyboard {
@@ -506,11 +517,12 @@
         right: 8px;
     }
 
+    /* Keep the controls centered directly under the header to avoid overlap */
     .mobile-controls-bar {
-        top: 8px;
-        transform: none;
-        left: auto;
-        right: 140px;
+        top: 54px;
+        transform: translateX(-50%);
+        left: 50%;
+        right: auto;
         padding: 4px 8px;
     }
 
