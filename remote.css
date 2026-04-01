@@ -145,7 +145,6 @@
 
 .dashboard-view.active {
     display: block;
-    /* Removed flex layout since we are going full absolute positioning */
 }
 
 .landing-view.hidden {
@@ -215,7 +214,6 @@
     align-items: center;
     z-index: 50;
     pointer-events: none;
-    /* Let clicks pass through empty space */
 }
 
 .remote-brand {
@@ -298,7 +296,6 @@
 .mobile-controls-bar {
     position: absolute;
     top: 70px;
-    /* Below the floating header */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -402,6 +399,14 @@
     transform: scale(0.95);
 }
 
+/* Toggle state for Shift and Caps Lock */
+.mk-key.toggled {
+    background: rgba(88, 166, 255, 0.4);
+    color: #fff;
+    border-color: #58a6ff;
+    box-shadow: inset 0 0 8px rgba(88, 166, 255, 0.3);
+}
+
 .mk-w15 {
     flex: 1.5;
     font-size: 0.65rem;
@@ -419,24 +424,6 @@
 
 .mk-space {
     flex: 6.0;
-}
-
-.mk-native-input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: #000;
-    color: #fff;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    text-align: center;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.mk-native-input:focus {
-    border-color: #58a6ff;
 }
 
 /* Landscape Tweaks */

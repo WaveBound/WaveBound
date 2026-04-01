@@ -159,10 +159,6 @@
 
             <!-- Full Virtual Keyboard (No Numpad) -->
             <div class="mobile-keyboard" id="mobile-keyboard">
-                <div class="mk-row" style="margin-bottom: 4px;">
-                    <input type="text" id="mobile-text-input" class="mk-native-input"
-                        placeholder="Tap here to use phone keyboard..." autocomplete="off">
-                </div>
                 <div class="mk-row">
                     <button class="mk-key mk-w15" data-key="Escape">Esc</button>
                     <button class="mk-key" data-key="1">1</button>
@@ -181,44 +177,44 @@
                 </div>
                 <div class="mk-row">
                     <button class="mk-key mk-w15" data-key="Tab">Tab</button>
-                    <button class="mk-key" data-key="q">Q</button>
-                    <button class="mk-key" data-key="w">W</button>
-                    <button class="mk-key" data-key="e">E</button>
-                    <button class="mk-key" data-key="r">R</button>
-                    <button class="mk-key" data-key="t">T</button>
-                    <button class="mk-key" data-key="y">Y</button>
-                    <button class="mk-key" data-key="u">U</button>
-                    <button class="mk-key" data-key="i">I</button>
-                    <button class="mk-key" data-key="o">O</button>
-                    <button class="mk-key" data-key="p">P</button>
+                    <button class="mk-key" data-key="q">q</button>
+                    <button class="mk-key" data-key="w">w</button>
+                    <button class="mk-key" data-key="e">e</button>
+                    <button class="mk-key" data-key="r">r</button>
+                    <button class="mk-key" data-key="t">t</button>
+                    <button class="mk-key" data-key="y">y</button>
+                    <button class="mk-key" data-key="u">u</button>
+                    <button class="mk-key" data-key="i">i</button>
+                    <button class="mk-key" data-key="o">o</button>
+                    <button class="mk-key" data-key="p">p</button>
                     <button class="mk-key" data-key="[">[</button>
                     <button class="mk-key" data-key="]">]</button>
                     <button class="mk-key mk-w15" data-key="\">\</button>
                 </div>
                 <div class="mk-row">
                     <button class="mk-key mk-w20" data-key="CapsLock">Caps</button>
-                    <button class="mk-key" data-key="a">A</button>
-                    <button class="mk-key" data-key="s">S</button>
-                    <button class="mk-key" data-key="d">D</button>
-                    <button class="mk-key" data-key="f">F</button>
-                    <button class="mk-key" data-key="g">G</button>
-                    <button class="mk-key" data-key="h">H</button>
-                    <button class="mk-key" data-key="j">J</button>
-                    <button class="mk-key" data-key="k">K</button>
-                    <button class="mk-key" data-key="l">L</button>
+                    <button class="mk-key" data-key="a">a</button>
+                    <button class="mk-key" data-key="s">s</button>
+                    <button class="mk-key" data-key="d">d</button>
+                    <button class="mk-key" data-key="f">f</button>
+                    <button class="mk-key" data-key="g">g</button>
+                    <button class="mk-key" data-key="h">h</button>
+                    <button class="mk-key" data-key="j">j</button>
+                    <button class="mk-key" data-key="k">k</button>
+                    <button class="mk-key" data-key="l">l</button>
                     <button class="mk-key" data-key=";">;</button>
                     <button class="mk-key" data-key="'">'</button>
                     <button class="mk-key mk-w20" data-key="Enter">Enter</button>
                 </div>
                 <div class="mk-row">
                     <button class="mk-key mk-w25" data-key="Shift">Shift</button>
-                    <button class="mk-key" data-key="z">Z</button>
-                    <button class="mk-key" data-key="x">X</button>
-                    <button class="mk-key" data-key="c">C</button>
-                    <button class="mk-key" data-key="v">V</button>
-                    <button class="mk-key" data-key="b">B</button>
-                    <button class="mk-key" data-key="n">N</button>
-                    <button class="mk-key" data-key="m">M</button>
+                    <button class="mk-key" data-key="z">z</button>
+                    <button class="mk-key" data-key="x">x</button>
+                    <button class="mk-key" data-key="c">c</button>
+                    <button class="mk-key" data-key="v">v</button>
+                    <button class="mk-key" data-key="b">b</button>
+                    <button class="mk-key" data-key="n">n</button>
+                    <button class="mk-key" data-key="m">m</button>
                     <button class="mk-key" data-key=",">,</button>
                     <button class="mk-key" data-key=".">.</button>
                     <button class="mk-key" data-key="/">/</button>
@@ -381,6 +377,14 @@
             handleDisconnect();
         });
 
+        // Stops UI overlay clicks (buttons, keyboard) from clicking the stream behind it
+        function shouldIgnoreEvent(e) {
+            return e.target.closest('.mobile-controls-bar') ||
+                e.target.closest('.mobile-keyboard') ||
+                e.target.closest('.dash-fullscreen-btn') ||
+                e.target.closest('.remote-header');
+        }
+
         function getMappedCoordinates(e) {
             const rect = dashVideo.getBoundingClientRect();
             const videoW = dashVideo.videoWidth || hostScreenWidth;
@@ -421,6 +425,7 @@
         let lastMoveTime = 0;
 
         dashVideoWrap.addEventListener('mousemove', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
             const now = Date.now();
             if (now - lastMoveTime < 16) return;
@@ -433,6 +438,7 @@
         });
 
         dashVideoWrap.addEventListener('mousedown', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
             dashVideoWrap.focus();
             isDragging = true;
@@ -444,6 +450,7 @@
         });
 
         dashVideoWrap.addEventListener('mouseup', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
             isDragging = false;
             const coords = getMappedCoordinates(e);
@@ -453,9 +460,12 @@
             }
         });
 
-        dashVideoWrap.addEventListener('contextmenu', e => e.preventDefault());
+        dashVideoWrap.addEventListener('contextmenu', e => {
+            if (!shouldIgnoreEvent(e)) e.preventDefault();
+        });
 
         dashVideoWrap.addEventListener('wheel', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
             const coords = getMappedCoordinates(e);
             if (coords) {
@@ -489,12 +499,14 @@
         let lastTwoFingerY = 0;
         let isSimulatingDrag = false;
 
+        let shiftActive = false;
+        let capsActive = false;
+
         const btnLeft = document.getElementById('mc-btn-left');
         const btnRight = document.getElementById('mc-btn-right');
         const btnHold = document.getElementById('mc-btn-hold');
         const btnKbd = document.getElementById('mc-btn-kbd');
         const mobileKbd = document.getElementById('mobile-keyboard');
-        const mobileTextInput = document.getElementById('mobile-text-input');
 
         btnLeft.addEventListener('click', () => {
             mcMouseButton = 'left';
@@ -523,8 +535,8 @@
         });
 
         dashVideoWrap.addEventListener('touchstart', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
-            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn') || e.target.closest('.remote-header')) return;
 
             e.preventDefault();
             if (e.touches.length === 2) {
@@ -546,8 +558,8 @@
         }, { passive: false });
 
         dashVideoWrap.addEventListener('touchmove', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
-            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn') || e.target.closest('.remote-header')) return;
             e.preventDefault();
 
             if (e.touches.length === 2) {
@@ -574,6 +586,7 @@
         }, { passive: false });
 
         dashVideoWrap.addEventListener('touchend', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             if (!connection || !connection.open) return;
 
             let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
@@ -593,7 +606,8 @@
             }
         });
 
-        dashVideoWrap.addEventListener('touchcancel', () => {
+        dashVideoWrap.addEventListener('touchcancel', (e) => {
+            if (shouldIgnoreEvent(e)) return;
             activeTouchId = null;
             if (isSimulatingDrag && connection && connection.open) {
                 connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
@@ -601,20 +615,84 @@
             }
         });
 
+        function updateKeyboardVisuals() {
+            const isUpper = shiftActive || capsActive;
+            document.querySelectorAll('.mk-key').forEach(btn => {
+                const k = btn.getAttribute('data-key');
+                if (k && k.length === 1 && k.match(/[a-z]/i)) {
+                    btn.textContent = isUpper ? k.toUpperCase() : k.toLowerCase();
+                }
+            });
+        }
+
         document.querySelectorAll('.mk-key').forEach(btn => {
             const triggerDown = (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 if (!connection || !connection.open) return;
+
                 const key = btn.getAttribute('data-key');
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'down' } });
+                if (!key) return;
+
+                if (key === 'Shift') {
+                    shiftActive = !shiftActive;
+                    document.querySelectorAll('.mk-key[data-key="Shift"]').forEach(b => b.classList.toggle('toggled', shiftActive));
+                    updateKeyboardVisuals();
+                    return;
+                }
+
+                if (key === 'CapsLock') {
+                    capsActive = !capsActive;
+                    btn.classList.toggle('toggled', capsActive);
+                    updateKeyboardVisuals();
+                    return;
+                }
+
+                let finalKey = key;
+                if (key.length === 1) {
+                    if (key.match(/[a-z]/i) && (shiftActive || capsActive)) {
+                        finalKey = 'Shift+' + key.toLowerCase();
+                    } else if (shiftActive) {
+                        finalKey = 'Shift+' + key; // Example: Shift+1 for !
+                    }
+                } else if (shiftActive) {
+                    finalKey = 'Shift+' + key; // Allow Shift+ArrowUp etc.
+                }
+
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: finalKey, action: 'down' } });
                 btn.classList.add('active');
             };
+
             const triggerUp = (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 if (!connection || !connection.open) return;
+
                 const key = btn.getAttribute('data-key');
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'up' } });
+                if (!key) return;
+
+                if (key === 'Shift' || key === 'CapsLock') return;
+
+                let finalKey = key;
+                if (key.length === 1) {
+                    if (key.match(/[a-z]/i) && (shiftActive || capsActive)) {
+                        finalKey = 'Shift+' + key.toLowerCase();
+                    } else if (shiftActive) {
+                        finalKey = 'Shift+' + key;
+                    }
+                } else if (shiftActive) {
+                    finalKey = 'Shift+' + key;
+                }
+
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: finalKey, action: 'up' } });
                 btn.classList.remove('active');
+
+                // Auto-disable shift state after pressing a key
+                if (shiftActive) {
+                    shiftActive = false;
+                    document.querySelectorAll('.mk-key[data-key="Shift"]').forEach(b => b.classList.remove('toggled'));
+                    updateKeyboardVisuals();
+                }
             };
 
             btn.addEventListener('touchstart', triggerDown, { passive: false });
@@ -624,25 +702,6 @@
             btn.addEventListener('mousedown', triggerDown);
             btn.addEventListener('mouseup', triggerUp);
             btn.addEventListener('mouseleave', triggerUp);
-        });
-
-        mobileTextInput.addEventListener('input', (e) => {
-            if (!connection || !connection.open) return;
-            const val = e.target.value;
-            if (val.length > 0) {
-                const char = val[val.length - 1];
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'down' } });
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'up' } });
-                setTimeout(() => { e.target.value = ''; }, 10);
-            }
-        });
-
-        mobileTextInput.addEventListener('keydown', (e) => {
-            if (!connection || !connection.open) return;
-            if (e.key === 'Backspace' || e.key === 'Enter') {
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' } });
-                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' } });
-            }
         });
 
         // ── Fullscreen Toggle ──
