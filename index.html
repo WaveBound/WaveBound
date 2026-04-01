@@ -304,18 +304,18 @@
             <div class="mobile-keyboard" id="mobile-keyboard">
                 <div class="mk-row">
                     <button class="mk-key mk-w15" data-key="Escape">Esc</button>
-                    <button class="mk-key" data-key="1">1</button>
-                    <button class="mk-key" data-key="2">2</button>
-                    <button class="mk-key" data-key="3">3</button>
-                    <button class="mk-key" data-key="4">4</button>
-                    <button class="mk-key" data-key="5">5</button>
-                    <button class="mk-key" data-key="6">6</button>
-                    <button class="mk-key" data-key="7">7</button>
-                    <button class="mk-key" data-key="8">8</button>
-                    <button class="mk-key" data-key="9">9</button>
-                    <button class="mk-key" data-key="0">0</button>
-                    <button class="mk-key" data-key="-">-</button>
-                    <button class="mk-key" data-key="=">=</button>
+                    <button class="mk-key" data-key="1" data-fkey="F1">1</button>
+                    <button class="mk-key" data-key="2" data-fkey="F2">2</button>
+                    <button class="mk-key" data-key="3" data-fkey="F3">3</button>
+                    <button class="mk-key" data-key="4" data-fkey="F4">4</button>
+                    <button class="mk-key" data-key="5" data-fkey="F5">5</button>
+                    <button class="mk-key" data-key="6" data-fkey="F6">6</button>
+                    <button class="mk-key" data-key="7" data-fkey="F7">7</button>
+                    <button class="mk-key" data-key="8" data-fkey="F8">8</button>
+                    <button class="mk-key" data-key="9" data-fkey="F9">9</button>
+                    <button class="mk-key" data-key="0" data-fkey="F10">0</button>
+                    <button class="mk-key" data-key="-" data-fkey="F11">-</button>
+                    <button class="mk-key" data-key="=" data-fkey="F12">=</button>
                     <button class="mk-key mk-w20" data-key="Backspace">Bksp</button>
                 </div>
                 <div class="mk-row">
@@ -901,6 +901,13 @@
             const isUpper = shiftActive || capsActive;
             document.querySelectorAll('.mk-key').forEach(btn => {
                 const k = btn.getAttribute('data-key');
+                const fk = btn.getAttribute('data-fkey');
+                if (fk) {
+                    // Swap number keys to F-keys when shift is active
+                    btn.textContent = shiftActive ? fk : k;
+                    btn.classList.toggle('fkey-mode', shiftActive);
+                    return;
+                }
                 if (k && k.length === 1 && k.match(/[a-z]/i)) {
                     btn.textContent = isUpper ? k.toUpperCase() : k.toLowerCase();
                 }
@@ -914,6 +921,7 @@
                 if (!connection || !connection.open) return;
 
                 const key = btn.getAttribute('data-key');
+                const fkey = btn.getAttribute('data-fkey');
                 if (!key) return;
 
                 if (key === 'Shift') {
@@ -927,6 +935,13 @@
                     capsActive = !capsActive;
                     btn.classList.toggle('toggled', capsActive);
                     updateKeyboardVisuals();
+                    return;
+                }
+
+                // If shift is active and this key has an F-key, send the F-key instead
+                if (fkey && shiftActive) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: fkey, action: 'down' } });
+                    btn.classList.add('active');
                     return;
                 }
 
@@ -951,9 +966,20 @@
                 if (!connection || !connection.open) return;
 
                 const key = btn.getAttribute('data-key');
+                const fkey = btn.getAttribute('data-fkey');
                 if (!key) return;
 
                 if (key === 'Shift' || key === 'CapsLock') return;
+
+                // Release F-key and deactivate shift
+                if (fkey && shiftActive) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: fkey, action: 'up' } });
+                    btn.classList.remove('active');
+                    shiftActive = false;
+                    document.querySelectorAll('.mk-key[data-key="Shift"]').forEach(b => b.classList.remove('toggled'));
+                    updateKeyboardVisuals();
+                    return;
+                }
 
                 let finalKey = key;
                 if (key.length === 1) {

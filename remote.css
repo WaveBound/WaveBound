@@ -464,6 +464,14 @@
     box-shadow: inset 0 0 8px rgba(88, 166, 255, 0.3);
 }
 
+/* F-key mode: number keys showing F1-F12 */
+.mk-key.fkey-mode {
+    background: rgba(88, 166, 255, 0.12);
+    color: #58a6ff;
+    border-color: rgba(88, 166, 255, 0.4);
+    font-size: 0.65rem;
+}
+
 .mk-w15 {
     flex: 1.5;
     font-size: 0.65rem;
