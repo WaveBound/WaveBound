@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavebound</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="remote.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png"
+        href="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    <!-- Page progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo" id="nav-logo-link">
+                <div class="logo-mark"><img
+                        src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
+                        alt="Wavebound"></div>
+                Wavebound
+            </a>
+            <div class="nav-links" id="nav-links-main">
+                <a href="#features">Features</a>
+                <a href="#download">Download</a>
+            </div>
+            <div class="nav-actions">
+                <a href="https://github.com/WaveBound/WaveBound" target="_blank" class="nav-btn nav-btn-ghost">
+                    <i class="fab fa-github"></i>
+                    <span class="nav-btn-text">GitHub</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Connect Modal Overlay -->
+    <div class="rc-overlay" id="rc-overlay">
+        <div class="rc-modal">
+            <button class="rc-close" id="rc-close">&times;</button>
+            <h2>Remote Connect</h2>
+            <p>Enter the pairing code shown in your Wavebound desktop app to connect.</p>
+            <input type="text" class="rc-input" id="rc-code-input" placeholder="wb-xxxxxx" autocomplete="off"
+                autocorrect="off" maxlength="9" spellcheck="false">
+            <button class="rc-btn" id="rc-connect-btn">Connect</button>
+            <div class="rc-status" id="rc-status"></div>
+        </div>
+    </div>
+
+    <!-- Landing View -->
+    <div class="landing-view" id="landing-view">
+        <section class="hero">
+            <div class="hero-grid-bg"></div>
+            <div class="hero-orb"></div>
+            <div class="hero-corners">
+                <span class="corner corner-tl"></span>
+                <span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span>
+                <span class="corner corner-br"></span>
+            </div>
+            <div class="hero-badge hero-badge-1"><i class="fas fa-circle"></i> Sub-10ms Timing</div>
+            <div class="hero-badge hero-badge-2"><i class="fas fa-circle"></i> HSV color detection</div>
+            <div class="hero-badge hero-badge-3"><i class="fas fa-circle"></i> pixel-perfect clicks</div>
+            <div class="hero-badge hero-badge-4"><i class="fas fa-circle"></i> OCR screen reading</div>
+
+            <div class="hero-content">
+                <div class="hero-pill">
+                    <span class="pill-dot"></span>
+                    v1.1.9 out now
+                </div>
+                <h1 class="hero-h1">
+                    <div class="line-wrap"><span>Game automation,</span></div>
+                    <div class="line-wrap"><span class="h1-accent"><em>done right.</em></span></div>
+                </h1>
+                <p class="hero-sub">
+                    Record once, run forever. Wavebound handles the clicks,
+                    timing, and logic so you can focus on actually playing.
+                </p>
+                <div class="hero-btns">
+                    <a href="#download" class="btn-solid">
+                        Download free
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="#" class="btn-outline-accent trigger-remote">
+                        <i class="fas fa-wifi"></i>
+                        Remote Connect
+                    </a>
+                </div>
+            </div>
+            <div class="scroll-cue">
+                <span class="scroll-label">scroll</span>
+                <div class="scroll-track">
+                    <div class="scroll-pip"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Marquee & Features & Download sections kept for landing page -->
+        <div class="marquee-strip">
+            <div class="marquee-track"><span class="marquee-item"><i class="fas fa-eye"></i> OCR Screen Reading</span>
+            </div>
+        </div>
+        <section id="features" class="section-features">
+            <div class="wrap"></div>
+        </section>
+        <section id="download" class="section-download">
+            <div class="wrap"></div>
+        </section>
+    </div>
+
+    <!-- ── Pure Remote View ── -->
+    <div class="dashboard-view" id="dashboard-view">
+
+        <!-- Floating Header -->
+        <div class="remote-header">
+            <div class="remote-brand">
+                <img src="https://raw.githubusercontent.com/WaveBound/WaveBound/main/logo/main%20logo.png"
+                    alt="Wavebound">
+                <span class="cmd-ping-dot"></span> WaveBound PC
+            </div>
+            <div class="remote-actions">
+                <button class="dash-fullscreen-btn" id="dash-fullscreen-btn" title="Fullscreen Feed">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="cmd-btn-danger" id="dash-disconnect">
+                    <i class="fas fa-plug"></i> Disconnect
+                </button>
+            </div>
+        </div>
+
+        <!-- Video Stage -->
+        <div class="cmd-video-container" id="dash-video-wrap" tabindex="0" style="outline: none;">
+            <video id="dash-video" autoplay playsinline muted></video>
+
+            <div class="cmd-video-overlay" id="dash-video-placeholder">
+                <i class="fas fa-video-slash"></i>
+                <span style="font-size: 1.1rem; color: #8b949e;">Waiting for screen feed...</span>
+                <small style="color: #555;">Video streaming must be enabled in the desktop app.</small>
+            </div>
+
+            <!-- Mobile Tools Menu -->
+            <div class="mobile-controls-bar" id="mobile-controls-bar">
+                <button class="mc-btn active" id="mc-btn-left" title="Left Click"><i
+                        class="fas fa-mouse-pointer"></i></button>
+                <button class="mc-btn" id="mc-btn-right" title="Right Click"><i class="fas fa-mouse"></i></button>
+                <button class="mc-btn" id="mc-btn-hold" title="Drag / Hold Mode (Camera Turn)"><i
+                        class="fas fa-hand-rock"></i></button>
+                <button class="mc-btn" id="mc-btn-kbd" title="Keyboard"><i class="fas fa-keyboard"></i></button>
+            </div>
+
+            <!-- Full Virtual Keyboard (No Numpad) -->
+            <div class="mobile-keyboard" id="mobile-keyboard">
+                <div class="mk-row" style="margin-bottom: 4px;">
+                    <input type="text" id="mobile-text-input" class="mk-native-input"
+                        placeholder="Tap here to use phone keyboard..." autocomplete="off">
+                </div>
+                <div class="mk-row">
+                    <button class="mk-key mk-w15" data-key="Escape">Esc</button>
+                    <button class="mk-key" data-key="1">1</button>
+                    <button class="mk-key" data-key="2">2</button>
+                    <button class="mk-key" data-key="3">3</button>
+                    <button class="mk-key" data-key="4">4</button>
+                    <button class="mk-key" data-key="5">5</button>
+                    <button class="mk-key" data-key="6">6</button>
+                    <button class="mk-key" data-key="7">7</button>
+                    <button class="mk-key" data-key="8">8</button>
+                    <button class="mk-key" data-key="9">9</button>
+                    <button class="mk-key" data-key="0">0</button>
+                    <button class="mk-key" data-key="-">-</button>
+                    <button class="mk-key" data-key="=">=</button>
+                    <button class="mk-key mk-w20" data-key="Backspace">Bksp</button>
+                </div>
+                <div class="mk-row">
+                    <button class="mk-key mk-w15" data-key="Tab">Tab</button>
+                    <button class="mk-key" data-key="q">Q</button>
+                    <button class="mk-key" data-key="w">W</button>
+                    <button class="mk-key" data-key="e">E</button>
+                    <button class="mk-key" data-key="r">R</button>
+                    <button class="mk-key" data-key="t">T</button>
+                    <button class="mk-key" data-key="y">Y</button>
+                    <button class="mk-key" data-key="u">U</button>
+                    <button class="mk-key" data-key="i">I</button>
+                    <button class="mk-key" data-key="o">O</button>
+                    <button class="mk-key" data-key="p">P</button>
+                    <button class="mk-key" data-key="[">[</button>
+                    <button class="mk-key" data-key="]">]</button>
+                    <button class="mk-key mk-w15" data-key="\">\</button>
+                </div>
+                <div class="mk-row">
+                    <button class="mk-key mk-w20" data-key="CapsLock">Caps</button>
+                    <button class="mk-key" data-key="a">A</button>
+                    <button class="mk-key" data-key="s">S</button>
+                    <button class="mk-key" data-key="d">D</button>
+                    <button class="mk-key" data-key="f">F</button>
+                    <button class="mk-key" data-key="g">G</button>
+                    <button class="mk-key" data-key="h">H</button>
+                    <button class="mk-key" data-key="j">J</button>
+                    <button class="mk-key" data-key="k">K</button>
+                    <button class="mk-key" data-key="l">L</button>
+                    <button class="mk-key" data-key=";">;</button>
+                    <button class="mk-key" data-key="'">'</button>
+                    <button class="mk-key mk-w20" data-key="Enter">Enter</button>
+                </div>
+                <div class="mk-row">
+                    <button class="mk-key mk-w25" data-key="Shift">Shift</button>
+                    <button class="mk-key" data-key="z">Z</button>
+                    <button class="mk-key" data-key="x">X</button>
+                    <button class="mk-key" data-key="c">C</button>
+                    <button class="mk-key" data-key="v">V</button>
+                    <button class="mk-key" data-key="b">B</button>
+                    <button class="mk-key" data-key="n">N</button>
+                    <button class="mk-key" data-key="m">M</button>
+                    <button class="mk-key" data-key=",">,</button>
+                    <button class="mk-key" data-key=".">.</button>
+                    <button class="mk-key" data-key="/">/</button>
+                    <button class="mk-key mk-w25" data-key="Shift">Shift</button>
+                </div>
+                <div class="mk-row">
+                    <button class="mk-key mk-w15" data-key="Control">Ctrl</button>
+                    <button class="mk-key mk-w15" data-key="Meta">Win</button>
+                    <button class="mk-key mk-w15" data-key="Alt">Alt</button>
+                    <button class="mk-key mk-space" data-key=" ">Space</button>
+                    <button class="mk-key mk-w15" data-key="Alt">Alt</button>
+                    <button class="mk-key mk-w15" data-key="ArrowLeft">←</button>
+                    <button class="mk-key mk-w15" data-key="ArrowUp">↑</button>
+                    <button class="mk-key mk-w15" data-key="ArrowDown">↓</button>
+                    <button class="mk-key mk-w15" data-key="ArrowRight">→</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Landing page scripts ──
+        const nav = document.getElementById('nav');
+        const progressBar = document.getElementById('progressBar');
+        const scrollTrack = document.querySelector('.scroll-track');
+        const scrollPip = document.querySelector('.scroll-pip');
+
+        window.addEventListener('scroll', () => {
+            const docH = document.documentElement.scrollHeight - window.innerHeight;
+            const prog = docH > 0 ? Math.min(window.scrollY / docH, 1) : 0;
+            nav.classList.toggle('scrolled', window.scrollY > 32);
+            if (progressBar) progressBar.style.width = (prog * 100) + '%';
+            const trackH = scrollTrack ? scrollTrack.offsetHeight : 48;
+            const pipH = scrollPip ? scrollPip.offsetHeight : 10;
+            if (scrollPip) {
+                scrollPip.style.transform = `translateY(${prog * (trackH - pipH)}px)`;
+                scrollPip.style.opacity = prog > 0.01 ? '1' : '0.35';
+            }
+            if (scrollTrack) scrollTrack.style.opacity = prog > 0.92 ? '0' : '1';
+        }, { passive: true });
+
+        // ── Remote Control Logic ──
+        let peer = null;
+        let connection = null;
+
+        const overlay = document.getElementById('rc-overlay');
+        const codeInput = document.getElementById('rc-code-input');
+        const connectBtn = document.getElementById('rc-connect-btn');
+        const statusEl = document.getElementById('rc-status');
+        const closeBtn = document.getElementById('rc-close');
+
+        const landingView = document.getElementById('landing-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const navLinksMain = document.getElementById('nav-links-main');
+
+        const dashVideoWrap = document.getElementById('dash-video-wrap');
+        const dashVideo = document.getElementById('dash-video');
+        const dashVideoPlaceholder = document.getElementById('dash-video-placeholder');
+        const dashDisconnect = document.getElementById('dash-disconnect');
+
+        const savedCode = localStorage.getItem('wb-remote-code');
+        if (savedCode) codeInput.value = savedCode;
+
+        document.querySelectorAll('.trigger-remote').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                overlay.classList.add('active');
+                codeInput.focus();
+            });
+        });
+
+        closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+        connectBtn.addEventListener('click', doConnect);
+        codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
+
+        function doConnect() {
+            let code = codeInput.value.trim().toLowerCase();
+            if (!code) return;
+            if (!code.startsWith('wb-')) code = 'wb-' + code;
+
+            connectBtn.disabled = true;
+            statusEl.textContent = 'Connecting to signaling server...';
+            statusEl.style.color = 'var(--accent)';
+
+            peer = new Peer({ debug: 1 });
+
+            peer.on('open', () => {
+                statusEl.textContent = 'Connecting to PC...';
+                connection = peer.connect(code, { reliable: true });
+
+                connection.on('open', () => {
+                    localStorage.setItem('wb-remote-code', code);
+                    overlay.classList.remove('active');
+                    connectBtn.disabled = false;
+                    statusEl.textContent = '';
+
+                    // Switch to Dashboard
+                    landingView.classList.add('hidden');
+                    dashboardView.classList.add('active');
+                    if (navLinksMain) navLinksMain.style.display = 'none';
+                    window.scrollTo(0, 0);
+                    dashVideoWrap.focus();
+
+                    connection.send({ type: 'GET_STATE' });
+                });
+
+                connection.on('data', handleData);
+                connection.on('close', handleDisconnect);
+                connection.on('error', () => {
+                    statusEl.textContent = 'Connection failed. Check the code.';
+                    statusEl.style.color = '#ff6b6b';
+                    connectBtn.disabled = false;
+                });
+            });
+
+            peer.on('call', (call) => {
+                call.answer();
+                call.on('stream', (remoteStream) => {
+                    dashVideo.srcObject = remoteStream;
+                    dashVideoPlaceholder.classList.add('hidden');
+                });
+                call.on('close', () => {
+                    dashVideo.srcObject = null;
+                    dashVideoPlaceholder.classList.remove('hidden');
+                });
+            });
+
+            peer.on('error', (err) => {
+                statusEl.textContent = 'Error: ' + err.message;
+                statusEl.style.color = '#ff6b6b';
+                connectBtn.disabled = false;
+            });
+        }
+
+        let hostScreenWidth = 1920;
+        let hostScreenHeight = 1080;
+
+        function handleData(data) {
+            if (!data) return;
+            if (data.type === 'SCREEN_INFO' || data.type === 'STATE_SYNC') {
+                if (data.screenWidth) hostScreenWidth = data.screenWidth;
+                if (data.screenHeight) hostScreenHeight = data.screenHeight;
+            }
+        }
+
+        function handleDisconnect() {
+            connection = null;
+            if (peer) { peer.destroy(); peer = null; }
+            landingView.classList.remove('hidden');
+            dashboardView.classList.remove('active');
+            if (navLinksMain) navLinksMain.style.display = '';
+            dashVideo.srcObject = null;
+            dashVideoPlaceholder.classList.remove('hidden');
+        }
+
+        dashDisconnect.addEventListener('click', () => {
+            if (connection) connection.close();
+            handleDisconnect();
+        });
+
+        function getMappedCoordinates(e) {
+            const rect = dashVideo.getBoundingClientRect();
+            const videoW = dashVideo.videoWidth || hostScreenWidth;
+            const videoH = dashVideo.videoHeight || hostScreenHeight;
+
+            if (videoW === 0 || videoH === 0) return null;
+
+            const videoRatio = videoW / videoH;
+            const rectRatio = rect.width / rect.height;
+
+            let drawWidth, drawHeight, drawX, drawY;
+
+            if (videoRatio > rectRatio) {
+                drawWidth = rect.width;
+                drawHeight = rect.width / videoRatio;
+                drawX = 0;
+                drawY = (rect.height - drawHeight) / 2;
+            } else {
+                drawHeight = rect.height;
+                drawWidth = rect.height * videoRatio;
+                drawY = 0;
+                drawX = (rect.width - drawWidth) / 2;
+            }
+
+            const x = e.clientX - rect.left - drawX;
+            const y = e.clientY - rect.top - drawY;
+
+            if (x < 0 || x > drawWidth || y < 0 || y > drawHeight) return null;
+
+            const mappedX = Math.round((x / drawWidth) * hostScreenWidth);
+            const mappedY = Math.round((y / drawHeight) * hostScreenHeight);
+
+            return { x: mappedX, y: mappedY };
+        }
+
+        // ── Mouse Events (Desktop) ──
+        let isDragging = false;
+        let lastMoveTime = 0;
+
+        dashVideoWrap.addEventListener('mousemove', (e) => {
+            if (!connection || !connection.open) return;
+            const now = Date.now();
+            if (now - lastMoveTime < 16) return;
+            lastMoveTime = now;
+
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y } });
+            }
+        });
+
+        dashVideoWrap.addEventListener('mousedown', (e) => {
+            if (!connection || !connection.open) return;
+            dashVideoWrap.focus();
+            isDragging = true;
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const btn = e.button === 2 ? 'right' : 'left';
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: btn, action: 'down' } });
+            }
+        });
+
+        dashVideoWrap.addEventListener('mouseup', (e) => {
+            if (!connection || !connection.open) return;
+            isDragging = false;
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const btn = e.button === 2 ? 'right' : 'left';
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: btn, action: 'up' } });
+            }
+        });
+
+        dashVideoWrap.addEventListener('contextmenu', e => e.preventDefault());
+
+        dashVideoWrap.addEventListener('wheel', (e) => {
+            if (!connection || !connection.open) return;
+            const coords = getMappedCoordinates(e);
+            if (coords) {
+                const dir = e.deltaY < 0 ? 'up' : 'down';
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_SCROLL', amount: 1, direction: dir } });
+            }
+        }, { passive: true });
+
+        document.addEventListener('keydown', (e) => {
+            if (!connection || !connection.open) return;
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (dashboardView.classList.contains('active')) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' } });
+                if (e.key !== 'F5' && e.key !== 'F12') e.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (!connection || !connection.open) return;
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (dashboardView.classList.contains('active')) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' } });
+                if (e.key !== 'F5' && e.key !== 'F12') e.preventDefault();
+            }
+        });
+
+        // ── Mobile Mouse & Keyboard Integration ──
+        let mcMouseButton = 'left';
+        let mcHoldMode = false;
+        let activeTouchId = null;
+        let lastTwoFingerY = 0;
+        let isSimulatingDrag = false;
+
+        const btnLeft = document.getElementById('mc-btn-left');
+        const btnRight = document.getElementById('mc-btn-right');
+        const btnHold = document.getElementById('mc-btn-hold');
+        const btnKbd = document.getElementById('mc-btn-kbd');
+        const mobileKbd = document.getElementById('mobile-keyboard');
+        const mobileTextInput = document.getElementById('mobile-text-input');
+
+        btnLeft.addEventListener('click', () => {
+            mcMouseButton = 'left';
+            btnLeft.classList.add('active');
+            btnRight.classList.remove('active');
+        });
+
+        btnRight.addEventListener('click', () => {
+            mcMouseButton = 'right';
+            btnRight.classList.add('active');
+            btnLeft.classList.remove('active');
+        });
+
+        btnHold.addEventListener('click', () => {
+            mcHoldMode = !mcHoldMode;
+            btnHold.classList.toggle('active', mcHoldMode);
+            if (!mcHoldMode && isSimulatingDrag && connection && connection.open) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            }
+        });
+
+        btnKbd.addEventListener('click', () => {
+            mobileKbd.classList.toggle('active');
+            btnKbd.classList.toggle('active');
+        });
+
+        dashVideoWrap.addEventListener('touchstart', (e) => {
+            if (!connection || !connection.open) return;
+            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn') || e.target.closest('.remote-header')) return;
+
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                lastTwoFingerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                return;
+            }
+
+            const touch = e.changedTouches[0];
+            activeTouchId = touch.identifier;
+            const coords = getMappedCoordinates(touch);
+
+            if (coords) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y } });
+                if (mcHoldMode) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'down' } });
+                    isSimulatingDrag = true;
+                }
+            }
+        }, { passive: false });
+
+        dashVideoWrap.addEventListener('touchmove', (e) => {
+            if (!connection || !connection.open) return;
+            if (e.target.closest('.mobile-controls-bar') || e.target.closest('.mobile-keyboard') || e.target.closest('.dash-fullscreen-btn') || e.target.closest('.remote-header')) return;
+            e.preventDefault();
+
+            if (e.touches.length === 2) {
+                const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                const deltaY = lastTwoFingerY - currentY;
+                if (Math.abs(deltaY) > 10) {
+                    connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_SCROLL', amount: 1, direction: deltaY > 0 ? 'down' : 'up' } });
+                    lastTwoFingerY = currentY;
+                }
+                return;
+            }
+
+            let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+            if (!touch) return;
+
+            const now = Date.now();
+            if (now - lastMoveTime < 16) return;
+            lastMoveTime = now;
+
+            const coords = getMappedCoordinates(touch);
+            if (coords) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_MOVE', x: coords.x, y: coords.y } });
+            }
+        }, { passive: false });
+
+        dashVideoWrap.addEventListener('touchend', (e) => {
+            if (!connection || !connection.open) return;
+
+            let touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+            if (!touch) return;
+            activeTouchId = null;
+
+            if (mcHoldMode) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            } else {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'down' } });
+                setTimeout(() => {
+                    if (connection && connection.open) {
+                        connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                    }
+                }, 50);
+            }
+        });
+
+        dashVideoWrap.addEventListener('touchcancel', () => {
+            activeTouchId = null;
+            if (isSimulatingDrag && connection && connection.open) {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_MOUSE_CLICK', button: mcMouseButton, action: 'up' } });
+                isSimulatingDrag = false;
+            }
+        });
+
+        document.querySelectorAll('.mk-key').forEach(btn => {
+            const triggerDown = (e) => {
+                e.preventDefault();
+                if (!connection || !connection.open) return;
+                const key = btn.getAttribute('data-key');
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'down' } });
+                btn.classList.add('active');
+            };
+            const triggerUp = (e) => {
+                e.preventDefault();
+                if (!connection || !connection.open) return;
+                const key = btn.getAttribute('data-key');
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: key, action: 'up' } });
+                btn.classList.remove('active');
+            };
+
+            btn.addEventListener('touchstart', triggerDown, { passive: false });
+            btn.addEventListener('touchend', triggerUp, { passive: false });
+            btn.addEventListener('touchcancel', triggerUp, { passive: false });
+
+            btn.addEventListener('mousedown', triggerDown);
+            btn.addEventListener('mouseup', triggerUp);
+            btn.addEventListener('mouseleave', triggerUp);
+        });
+
+        mobileTextInput.addEventListener('input', (e) => {
+            if (!connection || !connection.open) return;
+            const val = e.target.value;
+            if (val.length > 0) {
+                const char = val[val.length - 1];
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'down' } });
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: char, action: 'up' } });
+                setTimeout(() => { e.target.value = ''; }, 10);
+            }
+        });
+
+        mobileTextInput.addEventListener('keydown', (e) => {
+            if (!connection || !connection.open) return;
+            if (e.key === 'Backspace' || e.key === 'Enter') {
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'down' } });
+                connection.send({ type: 'REMOTE_INPUT', payload: { type: 'REMOTE_KEY_PRESS', key: e.key, action: 'up' } });
+            }
+        });
+
+        // ── Fullscreen Toggle ──
+        const fullscreenBtn = document.getElementById('dash-fullscreen-btn');
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (dashVideoWrap.requestFullscreen) dashVideoWrap.requestFullscreen();
+                else if (dashVideoWrap.webkitRequestFullscreen) dashVideoWrap.webkitRequestFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        }
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        dashVideo.addEventListener('dblclick', toggleFullscreen);
+
+        document.getElementById('nav-logo-link').addEventListener('click', (e) => {
+            if (dashboardView.classList.contains('active')) {
+                e.preventDefault();
+                if (connection) connection.close();
+                handleDisconnect();
+            }
+        });
+    </script>
+</body>
+
+</html>
